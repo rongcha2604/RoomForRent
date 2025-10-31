@@ -297,6 +297,35 @@ git remote add origin https://github.com/USERNAME/QuanLy-NhaTro.git
 1. Dùng Personal Access Token (xem Bước 7.2)
 2. Hoặc cấu hình SSH key (phức tạp hơn)
 
+### ❌ Lỗi: "error: GH007: Your push would publish a private email address"
+
+**Nguyên nhân:** Email trong Git config là private email, GitHub không cho phép push
+
+**Giải pháp 1 (Khuyến nghị - Dễ nhất):**
+Dùng email no-reply của GitHub (luôn public và an toàn):
+
+1. Vào: https://github.com/settings/emails
+2. Tìm phần "Keep my email addresses private" - **BẬT** (enabled)
+3. Copy email no-reply, ví dụ: `rongcha2604@users.noreply.github.com`
+4. Cấu hình lại Git:
+```bash
+git config --global user.email "rongcha2604@users.noreply.github.com"
+```
+(Thay `rongcha2604` bằng username GitHub của bạn)
+5. Push lại:
+```bash
+git push -u origin main
+```
+
+**Giải pháp 2 (Nếu muốn dùng email thật):**
+1. Vào: https://github.com/settings/emails
+2. Tìm phần "Keep my email addresses private" - **TẮT** (disabled)
+3. Vào phần "Primary email" và check "Make my primary email public"
+4. Push lại:
+```bash
+git push -u origin main
+```
+
 ### ❌ Lỗi: "Updates were rejected because the remote contains work..."
 
 **Nguyên nhân:** GitHub có code mới mà local chưa có

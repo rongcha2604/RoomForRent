@@ -19,6 +19,10 @@ const DashboardView: React.FC<DashboardViewProps> = ({ setActiveView, setActiveM
   const [selectedInvoiceForPayment, setSelectedInvoiceForPayment] = useState<Invoice | null>(null);
 
   const occupiedRooms = leases.filter(l => l.status === 'active').length;
+  
+  // Count all tenants in the system
+  const tenantCount = tenants.length;
+  
   // Count invoices that are unpaid or partially paid
   const unpaidInvoicesCount = invoices.filter(i => i.status === 'unpaid' || i.status === 'partial').length;
   // Calculate total remaining debt (total - amountPaid)
@@ -120,7 +124,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ setActiveView, setActiveM
           <div onClick={() => setActiveView('tenants')} className="cursor-pointer transform transition-all duration-200 hover:scale-105 active:scale-95">
             <SummaryCard 
               title="Khách thuê" 
-              value={occupiedRooms} 
+              value={tenantCount} 
               icon={<UsersIcon />} 
               color="#10b981"
               bgColor="#d1fae5"

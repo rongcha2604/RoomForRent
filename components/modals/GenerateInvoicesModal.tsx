@@ -4,7 +4,7 @@ import Modal from './Modal';
 import { useAppData } from '../../hooks/useAppData';
 import { PRIMARY_COLOR } from '../../constants';
 import { type Room, type Lease, type Reading, type Invoice } from '../../types';
-import { buildInvoice } from '../../services/billing';
+import { buildInvoice, settleWithDeposit, type DepositSettlement } from '../../services/billing';
 import { 
     createInvoiceDraft, 
     convertToAppInvoice, 
@@ -32,11 +32,12 @@ interface InvoiceDraft {
     lastWaterReading: number;
     newElectricReading: string;
     newWaterReading: string;
-    calculatedInvoice: Omit<Invoice, 'id' | 'status'> | null;
+    calculatedInvoice: Omit<Invoice, 'id'> | null;
     electricWarning?: Warning;
     waterWarning?: Warning;
     confirmed: boolean;
     rentBreakdown?: Array<{ tenantId: number; tenantName: string; days: number; rentShare: number }>;
+    settlement?: DepositSettlement; // Settlement info for advance payment mode
 }
 
 const getPeriodString = (date: Date) => {
@@ -355,8 +356,29 @@ const GenerateInvoicesModal: React.FC<GenerateInvoicesModalProps> = ({ onClose }
                 // Build invoice using billing library
                 const result = buildInvoice(invoiceDraft);
                 
+                // Calculate settlement if payment mode is 'advance'
+                let settlement: DepositSettlement | undefined;
+                if (draft.lease.paymentMode === 'advance' && draft.lease.deposit > 0) {
+                    settlement = settleWithDeposit(result.total, draft.lease.deposit);
+                }
+                draft.settlement = settlement;
+                
                 // Convert to app invoice format
-                draft.calculatedInvoice = convertToAppInvoice(result, draft.lease.id, period);
+                const invoice = convertToAppInvoice(result, draft.lease.id, period);
+                
+                // Set amountPaid and status based on settlement (for advance payment mode)
+                if (settlement) {
+                    invoice.amountPaid = settlement.fromDeposit;
+                    if (settlement.fromDeposit >= invoice.total) {
+                        invoice.status = 'paid';
+                    } else if (settlement.fromDeposit > 0) {
+                        invoice.status = 'partial';
+                    } else {
+                        invoice.status = 'unpaid';
+                    }
+                }
+                
+                draft.calculatedInvoice = invoice;
                 
             } catch (error) {
                 console.error('Error calculating invoice:', error);
@@ -437,8 +459,8 @@ const GenerateInvoicesModal: React.FC<GenerateInvoicesModalProps> = ({ onClose }
                     });
                 }
                 
-                // Create invoice
-                await addInvoice({ ...calculatedInvoice!, status: 'unpaid' });
+                // Create invoice with settlement info (amountPaid and status already set if settlement exists)
+                await addInvoice(calculatedInvoice!);
             }
 
             alert(`✅ Đã lưu chỉ số và tạo thành công ${validDrafts.length} hóa đơn!`);
@@ -556,6 +578,11 @@ const GenerateInvoicesModal: React.FC<GenerateInvoicesModalProps> = ({ onClose }
                                const periodDisplay = formatPeriod(billingPeriod);
                                const isProRated = !isFullMonth(billingPeriod);
                                
+                               // Calculate final amount to pay (after deposit deduction)
+                               const finalAmountToPay = draft.settlement 
+                                   ? draft.settlement.collectMore 
+                                   : draft.calculatedInvoice.total;
+                               
                                return (
                                    <div className="mt-3 pt-3 border-t text-sm">
                                        {isProRated && (
@@ -563,7 +590,40 @@ const GenerateInvoicesModal: React.FC<GenerateInvoicesModalProps> = ({ onClose }
                                                <span className="font-semibold">📅 Pro-rate:</span> {periodDisplay}
                                            </div>
                                        )}
-                                       <p className="font-bold text-lg text-right mb-2" style={{color: PRIMARY_COLOR}}>{formatCurrency(draft.calculatedInvoice.total)}</p>
+                                       
+                                       {/* Settlement info for advance payment mode */}
+                                       {draft.settlement && (
+                                           <div className="mb-2 p-2 bg-green-50 border border-green-200 rounded text-xs">
+                                               <p className="font-semibold text-green-800 mb-1">💰 Thanh toán đóng trước:</p>
+                                               <div className="space-y-0.5 text-green-700">
+                                                   <div className="flex justify-between">
+                                                       <span>Tổng hóa đơn:</span>
+                                                       <span className="font-semibold">{formatCurrency(draft.calculatedInvoice.total)}</span>
+                                                   </div>
+                                                   <div className="flex justify-between">
+                                                       <span>Đã trừ tiền ứng trước:</span>
+                                                       <span className="font-semibold">-{formatCurrency(draft.settlement.fromDeposit)}</span>
+                                                   </div>
+                                                   {draft.settlement.depositRemaining > 0 && (
+                                                       <div className="flex justify-between text-xs text-green-600">
+                                                           <span>Tiền ứng trước còn lại:</span>
+                                                           <span>{formatCurrency(draft.settlement.depositRemaining)}</span>
+                                                       </div>
+                                                   )}
+                                               </div>
+                                           </div>
+                                       )}
+                                       
+                                       <p className="font-bold text-lg text-right mb-2" style={{color: PRIMARY_COLOR}}>
+                                           {draft.settlement ? (
+                                               <>
+                                                   <span className="text-base text-slate-600 line-through mr-2">{formatCurrency(draft.calculatedInvoice.total)}</span>
+                                                   <span>{formatCurrency(finalAmountToPay)}</span>
+                                               </>
+                                           ) : (
+                                               formatCurrency(draft.calculatedInvoice.total)
+                                           )}
+                                       </p>
                                        <div className="flex justify-between text-slate-600"><span>Tiền phòng{isProRated ? ' (theo ngày)' : ''}:</span><span>{formatCurrency(draft.calculatedInvoice.rent)}</span></div>
                                        
                                        {/* Rent Breakdown for Multiple Participants */}

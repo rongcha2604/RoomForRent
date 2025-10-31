@@ -122,7 +122,7 @@ const EditRoomModal: React.FC<EditRoomModalProps> = ({ room, onClose }) => {
                                 }
                             }
                         }}
-                        placeholder="VD: 3,000,000"
+                        placeholder="VD: 3.000.000"
                         className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#40BFC1]"
                         disabled={isSubmitting}
                     />
@@ -151,7 +151,7 @@ const EditRoomModal: React.FC<EditRoomModalProps> = ({ room, onClose }) => {
                                 }
                             }
                         }}
-                        placeholder="VD: 3,000,000"
+                        placeholder="VD: 3.000.000"
                         className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#40BFC1]"
                         disabled={isSubmitting}
                     />

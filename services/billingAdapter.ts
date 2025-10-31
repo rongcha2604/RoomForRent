@@ -138,16 +138,20 @@ export function createPeriodFromMonth(periodStr: string): Period {
  * If lease started mid-month, calculate from startDate to end of month
  */
 export function createPeriodForNewLease(lease: Lease, periodStr: string): Period {
-    const leaseStart = new Date(lease.startDate);
+    // Parse lease start date with UTC to avoid timezone issues
+    const leaseStart = new Date(lease.startDate + 'T00:00:00');
     const [year, month] = periodStr.split('-').map(Number);
     
-    // Check if lease started this month
-    if (leaseStart.getUTCFullYear() === year && leaseStart.getUTCMonth() === month - 1) {
+    // Check if lease started this month (compare UTC dates)
+    const leaseYear = leaseStart.getUTCFullYear();
+    const leaseMonth = leaseStart.getUTCMonth() + 1; // getUTCMonth() returns 0-11
+    
+    if (leaseYear === year && leaseMonth === month) {
         // Pro-rate from lease start to end of month
-        const end = new Date(Date.UTC(year, month, 1)); // First day of next month
+        const end = new Date(Date.UTC(year, month, 1)); // First day of next month (exclusive)
         
         return {
-            start: lease.startDate,
+            start: lease.startDate, // Use original lease.startDate to preserve exact date
             end: end.toISOString().slice(0, 10)
         };
     }

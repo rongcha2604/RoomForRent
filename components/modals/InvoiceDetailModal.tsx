@@ -2,6 +2,8 @@ import React from 'react';
 import Modal from './Modal';
 import { type Invoice, type Lease, type Room, type Tenant } from '../../types';
 import { PRIMARY_COLOR } from '../../constants';
+import { daysBetween } from '../../services/billing';
+import { createPeriodForNewLease } from '../../services/billingAdapter';
 
 interface InvoiceDetailModalProps {
   invoice: Invoice;
@@ -24,9 +26,28 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
   };
 
-  const formatDate = (period: string) => {
-    const [year, month] = period.split('-');
-    return `Tháng ${month}/${year}`;
+  // Calculate period info (start, end, days)
+  const billingPeriod = createPeriodForNewLease(lease, invoice.period);
+  const days = daysBetween(billingPeriod);
+  const isProRated = billingPeriod.start !== `${invoice.period}-01`;
+  
+  // Format end date for display (exclusive to inclusive)
+  // billingPeriod.end is exclusive (first day of next month), convert to inclusive (last day of current month)
+  const endDate = new Date(billingPeriod.end + 'T00:00:00');
+  endDate.setUTCDate(endDate.getUTCDate() - 1); // Use UTC to avoid timezone issues
+  const endStr = endDate.toISOString().slice(0, 10);
+  
+  // Format date to DD/MM/YYYY
+  const formatDateDDMMYYYY = (dateStr: string) => {
+    const date = new Date(dateStr + 'T00:00:00');
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const year = date.getUTCFullYear();
+    return `${day}/${month}/${year}`;
+  };
+  
+  const formatPeriod = () => {
+    return `${formatDateDDMMYYYY(billingPeriod.start)} - ${formatDateDDMMYYYY(endStr)} (${days} ngày)`;
   };
 
   return (
@@ -48,7 +69,12 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({
               }`}>
                 {invoice.status === 'paid' ? '✓ Đã Thanh Toán' : '⏳ Chưa Thanh Toán'}
               </span>
-              <p className="text-sm text-slate-600 mt-2">{formatDate(invoice.period)}</p>
+              <div className="text-sm text-slate-600 mt-2">
+                <p className="font-semibold">Kỳ: {formatPeriod()}</p>
+                {isProRated && (
+                  <p className="text-xs text-amber-600 mt-1">📅 Pro-rate (tính theo ngày thực)</p>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -58,7 +84,10 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({
           <h4 className="text-sm font-semibold text-slate-700 mb-2">📋 Chi tiết thanh toán:</h4>
           
           <div className="flex justify-between py-2 border-b border-slate-200">
-            <span className="text-slate-600">🏠 Tiền thuê phòng</span>
+            <div>
+              <span className="text-slate-600">🏠 Tiền thuê phòng</span>
+              <span className="text-xs text-slate-500 ml-2">({days} ngày)</span>
+            </div>
             <span className="font-semibold">{formatCurrency(invoice.rent)}</span>
           </div>
 

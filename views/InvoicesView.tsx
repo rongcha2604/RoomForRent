@@ -2,15 +2,60 @@
 import React, { useState, useMemo } from 'react';
 import { useAppData } from '../hooks/useAppData';
 import Header from '../components/Header';
-import { type Invoice, type ModalType, type View } from '../types';
+import { type Invoice, type ModalType, type View, type Lease } from '../types';
 import { PRIMARY_COLOR } from '../constants';
 import PartialPaymentModal from '../components/modals/PartialPaymentModal';
+import { daysBetween } from '../services/billing';
+import { createPeriodForNewLease } from '../services/billingAdapter';
 
 interface InvoicesViewProps {
   setActiveModal: (modal: ModalType | null) => void;
   setActiveView: (view: View) => void;
   currentView: View;
 }
+
+// Helper: Calculate period info (start, end, days) from invoice period and lease
+const getPeriodInfo = (invoice: Invoice, lease: Lease | undefined) => {
+    if (!lease) {
+        // Fallback to full month
+        const [year, month] = invoice.period.split('-').map(Number);
+        const start = new Date(Date.UTC(year, month - 1, 1));
+        const end = new Date(Date.UTC(year, month, 0)); // Last day of month
+        
+        const startStr = start.toISOString().slice(0, 10);
+        const endStr = end.toISOString().slice(0, 10);
+        const days = daysBetween({ start: startStr, end: `${year}-${String(month + 1).padStart(2, '0')}-01` });
+        
+        return { start: startStr, end: endStr, days, isProRated: false };
+    }
+    
+    // Calculate period - if lease started in this month, use pro-rate logic
+    const billingPeriod = createPeriodForNewLease(lease, invoice.period);
+    const days = daysBetween(billingPeriod);
+    const isProRated = billingPeriod.start !== `${invoice.period}-01`;
+    
+    // Format end date for display (exclusive to inclusive)
+    // billingPeriod.end is exclusive (first day of next month), convert to inclusive (last day of current month)
+    const endDate = new Date(billingPeriod.end + 'T00:00:00');
+    endDate.setUTCDate(endDate.getUTCDate() - 1); // Use UTC to avoid timezone issues
+    const endStr = endDate.toISOString().slice(0, 10);
+    
+    return {
+        start: billingPeriod.start,
+        end: endStr,
+        days,
+        isProRated
+    };
+};
+
+// Helper: Format date to DD/MM/YYYY
+const formatDateDDMMYYYY = (dateStr: string) => {
+    const date = new Date(dateStr + 'T00:00:00');
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const year = date.getUTCFullYear();
+    return `${day}/${month}/${year}`;
+};
 
 const InvoiceCard: React.FC<{ 
     invoice: Invoice; 
@@ -25,6 +70,9 @@ const InvoiceCard: React.FC<{
     
     const remainingDebt = invoice.total - invoice.amountPaid;
     const percentage = invoice.total > 0 ? Math.round((invoice.amountPaid / invoice.total) * 100) : 0;
+    
+    // Calculate period info
+    const periodInfo = getPeriodInfo(invoice, lease);
 
     return (
         <div className="bg-white p-3 rounded-xl shadow-sm border border-slate-200">
@@ -44,7 +92,9 @@ const InvoiceCard: React.FC<{
                             </span>
                         )}
                     </div>
-                    <p className="text-xs text-slate-500">Kỳ: {invoice.period}</p>
+                    <div className="text-xs text-slate-500">
+                        <p>Kỳ: {formatDateDDMMYYYY(periodInfo.start)} - {formatDateDDMMYYYY(periodInfo.end)} ({periodInfo.days} ngày)</p>
+                    </div>
                 </div>
             </div>
 
@@ -82,7 +132,7 @@ const InvoiceCard: React.FC<{
 
             {/* Invoice Details */}
             <div className="border-t border-slate-200 pt-2 text-xs text-slate-600 space-y-0.5 mb-3">
-                <div className="flex justify-between"><span>Tiền phòng:</span> <span>{formatCurrency(invoice.rent)}</span></div>
+                <div className="flex justify-between"><span>Tiền phòng ({periodInfo.days} ngày):</span> <span>{formatCurrency(invoice.rent)}</span></div>
                 <div className="flex justify-between"><span>Tiền điện ({invoice.electricUsage} kWh):</span> <span>{formatCurrency(invoice.electricCost || 0)}</span></div>
                 <div className="flex justify-between"><span>Tiền nước ({invoice.waterUsage} m³):</span> <span>{formatCurrency(invoice.waterCost || 0)}</span></div>
                 <div className="flex justify-between"><span>Phí khác:</span> <span>{formatCurrency(invoice.otherFees)}</span></div>

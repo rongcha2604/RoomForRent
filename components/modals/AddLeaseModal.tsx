@@ -443,7 +443,7 @@ const AddLeaseModal: React.FC<AddLeaseModalProps> = ({ onClose }) => {
                                 }
                             }
                         }}
-                        placeholder="VD: 2500000"
+                        placeholder="VD: 2.500.000"
                         min="0"
                         step="1000"
                         className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#40BFC1]"
@@ -476,7 +476,7 @@ const AddLeaseModal: React.FC<AddLeaseModalProps> = ({ onClose }) => {
                                 }
                             }
                         }}
-                        placeholder="VD: 1700000"
+                        placeholder="VD: 1.700.000"
                         min="0"
                         step="10000"
                         className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#40BFC1]"

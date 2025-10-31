@@ -15,25 +15,46 @@ interface InputFieldProps {
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const InputField: React.FC<InputFieldProps> = ({ label, name, value, onChange }) => (
-    <div>
-        <label htmlFor={name} className="block text-xs font-medium text-slate-700">{label}</label>
-        <div className="mt-1 relative rounded-md shadow-sm">
-            <input
-                type="number"
-                name={name}
-                id={name}
-                value={value}
-                onChange={onChange}
-                className="focus:ring-teal-500 focus:border-teal-500 block w-full pr-12 text-xs border-slate-300 rounded-md py-1.5 px-2.5"
-                placeholder="0"
-            />
-            <div className="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
-                <span className="text-slate-500 text-xs">VND</span>
+const InputField: React.FC<InputFieldProps> = ({ label, name, value, onChange }) => {
+    const formatCurrency = (val: number | ''): string => {
+        if (val === '' || val === 0) return '';
+        return Number(val).toLocaleString('vi-VN');
+    };
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const rawValue = e.target.value.replace(/\D/g, ''); // Loại bỏ tất cả ký tự không phải số
+        // Tạo synthetic event với giá trị đã parse
+        const syntheticEvent = {
+            ...e,
+            target: {
+                ...e.target,
+                name: e.target.name,
+                value: rawValue
+            }
+        } as React.ChangeEvent<HTMLInputElement>;
+        onChange(syntheticEvent);
+    };
+
+    return (
+        <div>
+            <label htmlFor={name} className="block text-xs font-medium text-slate-700">{label}</label>
+            <div className="mt-1 relative rounded-md shadow-sm">
+                <input
+                    type="text"
+                    name={name}
+                    id={name}
+                    value={formatCurrency(value)}
+                    onChange={handleChange}
+                    className="focus:ring-teal-500 focus:border-teal-500 block w-full pr-12 text-xs border-slate-300 rounded-md py-1.5 px-2.5"
+                    placeholder="0"
+                />
+                <div className="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
+                    <span className="text-slate-500 text-xs">VND</span>
+                </div>
             </div>
         </div>
-    </div>
-);
+    );
+};
 
 interface SettingsViewProps {
     setActiveView: (view: View) => void;
