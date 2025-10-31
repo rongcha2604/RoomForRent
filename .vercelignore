@@ -1,0 +1,31 @@
+# Build outputs (Vercel sẽ build lại)
+dist/
+
+# Dependencies
+node_modules/
+
+# Mobile/Android code (không cần deploy)
+android/
+
+# Environment files
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Capacitor
+.capacitor/
+
+# Git
+.git/
+

@@ -1,0 +1,2451 @@
+# Cursor AI Rules - Universal Template
+
+## Project Context
+**Tech Stack:**
+- Frontend: React 19 + TypeScript + Vite
+- Mobile: Capacitor 7 (Android native app)
+- Database: SQLite (via @capacitor-community/sqlite) cho native, localStorage cho web
+- State Management: React Context API + Custom Hooks
+- Build Tool: Vite 6
+- Deployment: Capacitor Android build
+
+**Mục đích dự án:** 
+Ứng dụng quản lý nhà trọ di động (Mobile-first) - Quản lý phòng trọ, khách thuê, hợp đồng thuê, hóa đơn điện nước, bảo trì, và báo cáo tài chính.
+
+**Project Structure:**
+```
+QuanLyNhaTro-VIP/
+├── components/          # React components
+│   ├── modals/         # Modal dialogs (Add/Edit forms)
+│   ├── BottomNavBar.tsx
+│   ├── Header.tsx
+│   └── ...
+├── views/              # Page views (Dashboard, Rooms, Invoices, etc.)
+├── services/           # Business logic & data layer
+│   ├── database.ts     # SQLite/localStorage database service
+│   ├── localStorageDb.ts
+│   ├── billing.ts
+│   └── ...
+├── hooks/              # Custom React hooks
+│   └── useAppData.ts   # Main app state hook
+├── utils/              # Utility functions
+│   └── security.ts
+├── types.ts            # TypeScript type definitions
+├── App.tsx             # Main app component
+├── index.tsx           # Entry point
+├── vite.config.ts      # Vite configuration
+├── capacitor.config.ts # Capacitor configuration
+└── android/            # Android native project
+```
+
+**📝 NOTE:** Sau khi copy file này vào dự án mới:
+1. Thay thế `[YOUR_...]` placeholders ở trên
+2. Update `project_directory` trong tất cả MCP calls (search "D:\HocTapLTHT\Dự án đã hoàn tất\QuanLyNhaTro-VIP")
+3. Điền "Framework-Specific Notes" (tham khảo templates ở cuối)
+4. Điền "Project-Specific Conventions" (API, naming, directories)
+
+---
+
+## MCP & Caching Configuration
+- Enable MCP: YES - **ULTRA-SAFE MODE** 🛡️
+- Vector Cache: DISABLED
+- Interactive Feedback: **ALWAYS 2 ROUNDS** (Before + After Code) ⚡
+- Approach: **MAXIMUM SAFETY MODE** - Quality First
+- Dual Round: MANDATORY (every task)
+- **Version:** 4.0 - ULTRA-SAFE MODE (Always 2 Rounds MCP)
+
+---
+
+## 📦 Installed MCP Servers
+
+### 1. **Interactive Feedback MCP** ✅
+- **Path:** `C:\MCP\interactive-feedback-mcp`
+- **Command:** `C:\Users\Windows\.local\bin\uv.exe --directory C:\MCP\interactive-feedback-mcp run server.py`
+- **Purpose:** Interactive feedback và approval workflow
+- **Config Key:** `interactive-feedback`
+- **Auto-approve:** `interactive_feedback`, `mcp_interactive-feedback_interactive_feedback`
+
+### 2. **MCP Memory Service** ✅
+- **Repo:** `doobidoo/mcp-memory-service` (v8.13.4)
+- **Path:** `C:\MCP\mcp-memory-service`
+- **Installation:** Installed via `pip install -e .`
+- **Command:** `python -m mcp_memory_service.server`
+- **Storage Backend:** `sqlite_vec` (local storage)
+- **Config Key:** `memory`
+- **Features:**
+  - Semantic memory storage và retrieval
+  - Tag-based organization
+  - Natural language time queries
+  - Memory consolidation
+  - Document ingestion system
+- **Tools Available:**
+  - `mcp_memory_store_memory` - Store memories
+  - `mcp_memory_retrieve_memory` - Retrieve memories
+  - `mcp_memory_search_by_tag` - Search by tags
+  - `mcp_memory_delete_memory` - Delete memories
+  - `mcp_memory_recall_memory` - Recall with time expressions
+  - `mcp_memory_ingest_document` - Ingest documents
+  - `mcp_memory_delete_by_timeframe` - Delete memories within date range
+  - `mcp_memory_delete_before_date` - Delete memories before specific date
+  - `mcp_memory_cleanup_duplicates` - Remove duplicate memories
+  - Và nhiều tools khác (xem full list trong codebase)
+- **⚠️ Retention Policy:**
+  - **NO AUTOMATIC EXPIRATION** - Memories lưu **VĨNH VIỄN** cho đến khi xóa thủ công
+  - **100% knowledge retention** - Không tự động xóa
+  - **Manual cleanup required** - User phải chủ động quản lý
+- **🗑️ Auto-Cleanup Policy (3 Months) - TỰ ĐỘNG:**
+  - **Policy:** Xóa memories cũ hơn 3 tháng (90 ngày)
+  - **Safe to delete:** Memories có tag "temporary", "test", "debug", "development"
+  - **Keep forever:** Memories có tag "important", "knowledge", "documentation", "solution", "reference"
+  - **⚡ AI TỰ ĐỘNG THỰC HIỆN:**
+    - AI PHẢI tự động nhắc hoặc thực hiện cleanup hàng tháng (ngày 1 hàng tháng)
+    - Sử dụng tool: `mcp_memory_delete_before_date` với `before_date = (today - 90 days)`
+    - Chỉ xóa memories có tag "temporary", "test", "debug", "development"
+    - KHÔNG xóa memories có tag "important", "knowledge", "documentation", "solution", "reference"
+    - Thông báo cho user trước khi xóa: "Tôi sẽ xóa X memories cũ hơn 3 tháng..."
+  - **Manual trigger:** User có thể yêu cầu: "Cleanup old memories" - AI sẽ thực hiện ngay
+- **🧹 Recommended Cleanup Schedule:**
+  - **Weekly** (15-30 min): Review memories từ 7 ngày qua, re-tag nếu cần
+  - **Monthly** (1-2 hours): Comprehensive review, delete old temporary/test memories (>3 months)
+  - **Quarterly** (2-4 hours): Full database health check, tag schema review, cleanup duplicates
+- **🗑️ Cleanup Tools:**
+  - Use `mcp_memory_delete_by_timeframe` để xóa memories cũ (ví dụ: >6 months)
+  - Use `mcp_memory_delete_before_date` để xóa memories trước một ngày cụ thể
+  - Use `mcp_memory_cleanup_duplicates` để xóa duplicates
+  - Review và delete test memories thường xuyên
+- **💡 Best Practice:**
+  - Tag memories đúng cách ngay từ đầu để dễ tìm và quản lý sau này
+  - Xóa test memories ngay sau khi không cần
+  - Archive hoặc xóa memories >1 năm nếu không còn giá trị
+  - Backup database trước khi cleanup lớn
+
+### 3. **Database SQL Server** ✅
+- **Repo:** `VlaadislavKr/mcp-sql-server` (v0.1.0)
+- **Path:** `C:\MCP\mcp-sql-server`
+- **Installation:** Installed via `npm install && npm run build`
+- **Command:** `node C:\MCP\mcp-sql-server\build\index.js`
+- **Config Key:** `database-sql`
+- **Supported Databases:**
+  - MySQL
+  - PostgreSQL
+  - SQLite
+- **Tools Available:**
+  - `execute_sql_query` - Execute SQL queries
+  - `insert_data` - Insert data into tables
+- **Note:** TypeScript/Node.js based, supports direct SQL execution
+
+### 4. **Database Inspector (DB-MCP)** ✅
+- **Repo:** `fenil210/database-mcp` (v0.2.0)
+- **Path:** `C:\MCP\database-mcp`
+- **Installation:** Installed via `pip install -e .`
+- **Command:** `db-mcp --config C:\MCP\database-mcp\config.json`
+- **Config Key:** `database-inspector`
+- **Supported Databases:**
+  - PostgreSQL (cần: `pip install psycopg2-binary`)
+  - MySQL (cần: `pip install mysql-connector-python`)
+  - SQLite (built-in)
+  - SQL Server (cần: `pip install pyodbc`)
+- **Tools Available:**
+  - `list_databases` - List all configured databases
+  - `get_schema` - Get schema information (tables, columns)
+  - `execute_query` - Execute SQL queries (SELECT only in read-only mode)
+  - `explain_query` - Get query execution plan
+  - `get_table_sample` - Get sample data from tables (first 10 rows)
+- **Configuration File:** `C:\MCP\database-mcp\config.json`
+  - Supports multiple databases simultaneously
+  - Read-only mode by default (safe)
+  - Environment variable support for credentials
+- **Note:** Python-based, uses SQLAlchemy for universal database connectivity
+
+### 📝 **MCP Configuration File Location:**
+- **Path:** `C:\Users\Windows\.cursor\mcp.json`
+- **Status:** ✅ Configured với 4 servers above
+
+### 🔧 **Quick Reference:**
+```json
+{
+  "mcpServers": {
+    "interactive-feedback": { ... },
+    "memory": { ... },
+    "database-sql": { ... },
+    "database-inspector": { ... }
+  }
+}
+```
+
+---
+
+---
+
+## 🚨 VERSION 4.0 - ULTRA-SAFE MODE (Always 2 Rounds MCP)
+
+### ⚡ **GOLDEN RULE: Every Task = 2 Rounds MCP Feedback**
+
+```
+🛡️ ULTRA-SAFE APPROACH - MAXIMUM SAFETY:
+
+MỌI TASK (100%) → 2 ROUNDS MCP:
+
+📋 ROUND 1 (BEFORE CODE):
+- AI phân tích task
+- Đề xuất approach chi tiết
+- 🚨 GỌI MCP Feedback
+- ⏸️ Đợi user approve design
+
+📋 ROUND 2 (AFTER CODE):  
+- AI implement theo approval
+- Show actual code changes
+- 🚨 GỌI MCP Feedback lần 2
+- ⏸️ Đợi user approve code
+- Done ✅
+
+🚨 SPECIAL RULE khi user xác nhận:
+User: "Đồng ý" / "OK" / "Làm đi" / "Được"
+→ AI: "Được! Để tôi gọi MCP Feedback ROUND 1..."
+→ [GỌI MCP ROUND 1]
+→ ⏸️ Đợi approval
+→ [Code]
+→ [GỌI MCP ROUND 2]  
+→ ⏸️ Đợi approval lần 2
+→ Done!
+
+✅ BENEFITS:
+- 100% visibility - User biết mọi thứ BEFORE VÀ AFTER code
+- Maximum safety - Review cả design VÀ implementation
+- Zero surprises - Không có unexpected changes
+- Better quality - Catch issues ở cả 2 stages (design + code)
+- Full control - User approve mọi bước
+```
+
+### 📝 **Reminder Prompts (User có thể dùng):**
+
+Nếu AI không tự động gọi MCP, user có thể nhắc:
+
+**Option 1: Nhắc nhẹ nhàng:**
+```
+"Nhớ áp dụng Version 4.0 - ULTRA-SAFE MODE nhé!"
+```
+
+**Option 2: Force trigger:**
+```
+"Please follow .cursorrules - call MCP 2 rounds"
+```
+
+**Option 3: Reminder ngắn:**
+```
+"MCP 2 rounds?"
+```
+
+**Option 4: Explicit request:**
+```
+"Theo Version 4.0, mọi task cần 2 rounds MCP Feedback"
+```
+
+---
+
+### 📋 **3 MODES SYSTEM:**
+
+**MODE 1: NORMAL (First Attempt) - 75% cases**
+- Trigger: Lần đầu với task/issue
+- MCP Rounds: **1 (BEFORE code only)**
+- Flow: Analyze → MCP → Wait → Code → Done
+
+**MODE 2: REPEATED (Second Attempt) - 20% cases**
+- Trigger: Đã làm 1 lần nhưng vẫn chưa xong
+- MCP Rounds: **2 (BEFORE + AFTER code)**
+- Flow: Analyze failure → MCP R1 → Wait → Code → MCP R2 → Wait → Done
+
+**MODE 3: DEBUG PROTOCOL (Third+ Attempt) - 5% cases** 🔥
+- Trigger: Đã làm 2 lần nhưng VẪN CHƯA GIẢI QUYẾT
+- MCP Rounds: **3 (BEFORE + DEBUG ANALYSIS + CLEANUP)**
+- Flow: Deep analysis → MCP R1 → Add debug logs → Test → MCP R2 → Fix → MCP R3 → Remove logs → Done
+
+### 🎯 **AUTO-DETECTION MECHANISM FOR MODE 3:**
+
+AI PHẢI tự động nhận biết khi nào trigger MODE 3:
+
+```markdown
+## 🔍 AUTO-DETECTION RULES:
+
+### Internal Tracking (AI MUST maintain):
+For EVERY issue, track:
+- issue_id: string (unique identifier, e.g., "email_validation_bug")
+- attempt_count: number (starts at 0)
+- previous_approaches: string[] (list of approaches tried)
+- previous_results: "success" | "failed"
+- current_understanding: string (what we learned so far)
+
+### Detection Logic:
+When attempt_count >= 2 AND previous_results = "failed":
+→ AUTO-TRIGGER MODE 3 (DEBUG PROTOCOL)
+
+### User Communication:
+AI MUST say to user:
+"⚠️ 3-STRIKE RULE TRIGGERED!
+This is attempt #3 for issue '[issue_id]'
+Previous attempts:
+1. [approach 1] → Failed: [reason]
+2. [approach 2] → Failed: [reason]
+
+Applying DEBUG PROTOCOL with comprehensive logging..."
+
+### Benefits:
+- No manual counting needed
+- Automatic escalation for stuck issues
+- Consistent MODE 3 protocol application
+- Better debugging with full context
+```
+
+---
+
+### 🎯 **SIMPLE WORKFLOW:**
+
+```
+EVERY Task:
+1. Answer 4 questions:
+   Q1: Lần đầu? Lần 2? Lần 3+? → MODE 1 / 2 / 3
+   Q2: Files affected? → List
+   Q3: Notable points? → Risks/Notes
+   Q4: (If MODE 3) Previous attempts? → What failed & why
+   
+2. 🚨 CALL MCP (ALWAYS!)
+   - Show detailed proposal
+   - ⏸️ WAIT for approval
+   - ❌ NEVER code before approval
+
+3. Implement after approval
+
+4. MODE 2: 🚨 CALL MCP again (code review)
+   MODE 3: 🚨 CALL MCP Round 2 (debug analysis)
+   - Show results/logs
+   - ⏸️ WAIT for approval
+
+5. MODE 3 only: 🚨 CALL MCP Round 3 (cleanup)
+   - Confirm issue solved
+   - Request permission to remove logs
+   - ⏸️ WAIT for user: "Remove debug logs?"
+   - After confirmation: Clean up
+
+6. Done ✅
+```
+
+### ✅ **WHY ALWAYS MCP?**
+
+1. **Zero Surprises** - User knows everything
+2. **Better Quality** - Catch issues early (cheap!)
+3. **User Control** - Approve every change
+4. **ROI 10-20x** - Small cost (2-5 min) → Big savings (avoid 30-120 min refactors)
+
+### ❌ **BIGGEST MISTAKE:**
+
+```
+❌ "Task này đơn giản, skip MCP"
+❌ "Chỉ sửa typo thôi, không cần"
+❌ "Tôi chắc chắn rồi, làm luôn"
+
+→ WRONG! Version 4.0 = ALWAYS 2 ROUNDS MCP!
+```
+
+---
+
+## 🚀 VERSION 3.0 - ALWAYS MCP MODE (ULTRA-SAFE)
+
+### 🛡️ **CORE PHILOSOPHY: "Review Everything, Miss Nothing"**
+
+**Triết lý mới:**
+- ✅ **MỌI task đều qua MCP Feedback** - Không có exceptions!
+- ✅ **Lỗi nhỏ, lỗi lớn, feature nhỏ, feature lớn** → Tất cả MCP
+- ✅ **Dự án lớn hay nhỏ** → Không quan trọng, vẫn MCP
+- ✅ **Maximum safety** → Không bao giờ skip review
+
+**Tại sao ALWAYS MCP?**
+1. 🎯 **Catch mọi issue sớm** - Ngay cả lỗi nhỏ có thể có big impact
+2. 🧠 **User có context đầy đủ** - Biết AI đang làm gì mọi lúc
+3. 🤝 **Collaboration tốt hơn** - User tham gia vào mọi quyết định
+4. 📚 **Learning opportunity** - Cả AI và User đều học từ mọi task
+5. 🛡️ **Zero surprise** - Không có unexpected changes
+6. ⚡ **Better quality** - Review trước = Less bugs sau
+
+---
+
+### 🎯 **1. TWO-MODE SYSTEM (Simplified)**
+
+AI chỉ cần phân biệt 2 modes:
+
+```markdown
+## MODE 1: NORMAL TASK (First Attempt)
+→ 1 ROUND MCP: BEFORE code only
+
+Flow:
+1. Đọc yêu cầu user
+2. Phân tích task (complexity, impact, files affected)
+3. 🚨 GỌI MCP FEEDBACK TRƯỚC KHI CODE
+   - Đề xuất approach
+   - List files sẽ thay đổi
+   - Explain reasoning
+4. ⏸️ ĐỢI user approval
+5. Implement theo feedback
+6. Done ✅
+
+Áp dụng cho:
+- ✅ Feature mới (lớn hoặc nhỏ)
+- ✅ Bug fixes (lớn hoặc nhỏ)
+- ✅ Refactoring
+- ✅ Mọi thứ lần đầu làm
+
+## MODE 2: REPEATED ISSUE (Second+ Attempt)
+→ 2 ROUNDS MCP: BEFORE + AFTER code
+
+Trigger: Cùng một vấn đề đã fix 1 lần nhưng CHƯA GIẢI QUYẾT
+
+Flow:
+1. Nhận biết: "Đây là lần thứ 2 với cùng issue"
+2. 🚨 ROUND 1 MCP: Design Review (BEFORE code)
+   - Phân tích sâu hơn
+   - Tại sao lần trước failed?
+   - Approach mới khác gì?
+   - Root cause analysis
+3. ⏸️ ĐỢI user approval approach
+4. Implement carefully với approach mới
+5. 🚨 ROUND 2 MCP: Code Review (AFTER code)
+   - Show actual implementation
+   - Verify logic correctness
+   - Check edge cases
+6. ⏸️ ĐỢI user approval code
+7. Deploy/Commit
+8. Done ✅
+
+Áp dụng cho:
+- ✅ Bug vẫn còn sau fix lần 1
+- ✅ Feature chưa hoạt động đúng sau lần 1
+- ✅ User báo "vẫn bị lỗi"
+- ✅ Test case vẫn fail sau fix lần 1
+
+## MODE 3: DEBUG PROTOCOL (Third+ Attempt - 3-Strike Rule) 🔥
+→ 3 ROUNDS: BEFORE + DEBUG LOGGING + AFTER
+
+Trigger: Đã làm 2 lần nhưng VẪN CHƯA GIẢI QUYẾT (3rd attempt)
+
+Flow:
+1. Nhận biết: "Đây là lần thứ 3! Critical issue!"
+2. 🚨 ROUND 1 MCP: Root Cause Deep Dive (BEFORE code)
+   - Chi tiết 2 attempts trước (what/why failed)
+   - Root cause hypothesis (theory mới)
+   - Debug strategy (cách verify)
+   - Logging plan (track execution flow)
+3. ⏸️ ĐỢI user approval strategy
+4. Implement với COMPREHENSIVE DEBUG LOGGING:
+   - Add detailed console.log/print statements
+   - Log function entry/exit
+   - Log variable states at key points
+   - Log API requests/responses
+   - Log error stack traces
+   - Track execution flow
+5. Test và thu thập logs
+6. 🚨 ROUND 2 MCP: Debug Analysis (AFTER testing)
+   - Share all logs collected
+   - Point out suspicious patterns
+   - Propose final fix based on logs
+7. ⏸️ ĐỢI user approval final fix
+8. Implement final fix
+9. Test và verify
+10. 🚨 ROUND 3 MCP: Cleanup Confirmation
+    - Confirm issue resolved
+    - Request permission to remove debug logs
+    - ⏸️ ĐỢI user confirmation: "Issue solved? Remove logs?"
+11. After user confirms: Remove all debug logging code
+12. Done ✅
+
+Áp dụng cho:
+- ✅ Bug vẫn tồn tại sau 2 attempts
+- ✅ Mysterious bugs không rõ nguyên nhân
+- ✅ User frustrated: "Sao vẫn chưa fix được?"
+- ✅ Complex issues cần deep investigation
+
+**Debug Logging Requirements:**
+- ✅ Logs PHẢI có timestamps
+- ✅ Logs PHẢI có context (function name, line number)
+- ✅ Logs PHẢI có variable values
+- ✅ Logs PHẢI dễ đọc (format clear)
+- ✅ Logs PHẢI comprehensive (cover all paths)
+
+**Cleanup Protocol:**
+- ❌ KHÔNG tự động xóa logs
+- ✅ PHẢI đợi user confirm "Issue solved"
+- ✅ SAU ĐÓ mới remove debug code
+- ✅ Keep only critical error handling logs
+```
+
+---
+
+### 🔍 **2. TASK ANALYSIS (Simplified - No Complex Scoring)**
+
+Thay vì risk score phức tạp, AI CHỈ cần trả lời 3 câu hỏi:
+
+```markdown
+## 3 CRITICAL QUESTIONS:
+
+### Q1: Đây có phải lần đầu làm task này?
+- YES → MODE 1 (1 round MCP BEFORE)
+- NO (đã làm 1+ lần) → MODE 2 (2 rounds MCP BEFORE+AFTER)
+
+### Q2: Task này thay đổi những gì?
+- Files affected: [List]
+- Database: [YES/NO - details]
+- API: [YES/NO - details]
+- UI: [YES/NO - details]
+- Logic: [YES/NO - details]
+
+### Q3: Có điểm nào user cần biết trước?
+- Breaking changes: [YES/NO - what]
+- Data migration: [YES/NO - plan]
+- Dependencies: [YES/NO - what]
+- Risks: [List if any]
+```
+
+---
+
+### 🎯 **3. MCP FEEDBACK TEMPLATE (Simplified)**
+
+**For MODE 1 (Normal - BEFORE code):**
+
+```xml
+<invoke name="mcp_interactive-feedback_interactive_feedback">
+  <parameter name="project_directory">D:\HocTapLTHT\Dự án đã hoàn tất\QuanLyNhaTro-VIP</parameter>
+  <parameter name="summary">
+## CÔNG VIỆC: [Tên task]
+
+### CHẾ ĐỘ: Lần đầu
+**MCP VÒNG:** 1/1 (TRƯỚC KHI CODE)
+
+### TÔI SẼ LÀM GÌ:
+[Giải thích rõ ràng công việc]
+
+### CÁCH LÀM:
+[Mô tả cách giải quyết]
+
+### FILE SẼ THAY ĐỔI:
+- File 1: [đường dẫn] - [thay đổi gì]
+- File 2: [đường dẫn] - [thay đổi gì]
+- ...
+
+### CHI TIẾT KỸ THUẬT:
+**Backend:**
+- [Thay đổi nếu có]
+
+**Frontend:**
+- [Thay đổi nếu có]
+
+**Database:**
+- [Thay đổi nếu có]
+
+### ĐIỂM CẦN LƯU Ý:
+- Thư viện phụ thuộc: [Nếu có]
+- Ảnh hưởng: [Nếu có]
+- Migration: [Nếu có]
+- Rủi ro: [Nếu có]
+
+### CÁC CÁCH KHÁC TÔI ĐÃ XEM XÉT:
+- Cách A: [Mô tả] - Tại sao không chọn?
+- Cách B: [Mô tả] - Tại sao chọn cách này?
+
+### CÂU HỎI CHO BẠN:
+[Các điểm cần làm rõ]
+  </parameter>
+</invoke>
+```
+
+**For MODE 2 (Repeated - BEFORE code):**
+
+```xml
+<parameter name="summary">
+## CÔNG VIỆC: [Tên task] - LẦN THỨ 2
+
+### CHẾ ĐỘ: VẤN ĐỀ LẶP LẠI ⚠️
+**MCP VÒNG:** 1/2 (TRƯỚC KHI CODE - Xem xét thiết kế)
+
+### LẦN TRƯỚC ĐÃ LÀM GÌ:
+**Đã thử:**
+- Lần 1: [Làm gì]
+  
+**Kết quả:**
+- [Vẫn lỗi / không hoạt động]
+  
+**Tại sao thất bại:**
+- Nguyên nhân: [Phân tích sâu]
+
+### CÁCH MỚI:
+**Khác gì lần trước:**
+[Giải thích chiến lược mới]
+
+**Tại sao cách này nên hiệu quả:**
+[Lý do]
+
+### FILE SẼ THAY ĐỔI:
+[Giống như MODE 1]
+
+### BÀI HỌC TỪ THẤT BẠI:
+- Bài học 1: [Đã học được gì]
+- Bài học 2: [Đã bỏ sót gì]
+
+### KẾ HOẠCH KIỂM TRA:
+- Cách test: [Các bước]
+- Tiêu chí thành công: [Rõ ràng]
+
+### YÊU CẦU:
+Xin vui lòng xem xét CÁCH MỚI này trước khi tôi code.
+Nếu thấy vấn đề gì, vui lòng chỉ ra ngay để tiết kiệm thời gian!
+</parameter>
+```
+
+**For MODE 2 (Repeated - AFTER code):**
+
+```xml
+<parameter name="summary">
+## CÔNG VIỆC: [Tên task] - LẦN THỨ 2
+
+### CHẾ ĐỘ: VẤN ĐỀ LẶP LẠI ⚠️
+**MCP VÒNG:** 2/2 (SAU KHI CODE - Xem xét code)
+
+### CODE ĐÃ VIẾT:
+**File đã thay đổi:**
+- File 1: [đường dẫn]
+  - Thay đổi: [Tóm tắt]
+  - Dòng quan trọng: [Số dòng hoặc đoạn code]
+  
+- File 2: [đường dẫn]
+  - Thay đổi: [Tóm tắt]
+
+### ĐIỂM NỔI BẬT TRONG CODE:
+[Hiện phần quan trọng của code]
+
+### KIỂM TRA:
+- [ ] Logic đúng như thiết kế đã duyệt
+- [ ] Đã xử lý các trường hợp đặc biệt
+- [ ] Đã xử lý lỗi
+- [ ] Tests (nếu có)
+
+### KHÁC VỚI KẾ HOẠCH:
+[Nếu có thay đổi so với Vòng 1]
+
+### SẴN SÀNG TRIỂN KHAI?
+Xin vui lòng xem xét code thực tế và xác nhận an toàn để tiếp tục.
+</parameter>
+```
+
+---
+
+### 🕐 **4. TIMING STRATEGY (Crystal Clear)**
+
+```markdown
+## WHEN TO CALL MCP:
+
+┌─────────────────────────────────────────────────┐
+│ DECISION TREE - ULTRA SIMPLE                     │
+└─────────────────────────────────────────────────┘
+
+Task mới
+   ↓
+Đây có phải lần đầu với task/issue này?
+   ↓
+YES → MODE 1
+   ├─ 🚨 GỌI MCP TRƯỚC KHI CODE (1 round)
+   ├─ ⏸️ Đợi approval
+   ├─ Code theo approval
+   └─ Done ✅
+
+NO (đã làm ≥1 lần rồi) → MODE 2
+   ├─ 🚨 ROUND 1: GỌI MCP TRƯỚC KHI CODE
+   ├─ ⏸️ Đợi approval design
+   ├─ Code carefully
+   ├─ 🚨 ROUND 2: GỌI MCP SAU KHI CODE
+   ├─ ⏸️ Đợi approval implementation
+   └─ Done ✅
+
+## WHY ALWAYS BEFORE?
+
+**BEFORE code = CHEAP to change**
+- 5-10 phút discussion
+- No code wasted
+- Clear direction
+
+**AFTER code = EXPENSIVE to change**
+- 60+ phút đã code
+- Nếu sai approach → refactor lại
+- Tâm lý không muốn đổi
+
+## WHY AFTER for MODE 2?
+
+**Khi đã fail 1 lần:**
+- Cần verify implementation chi tiết
+- User muốn xem actual code
+- Double-check logic correctness
+- Catch subtle bugs
+
+→ Worth the extra round!
+```
+
+---
+
+### 📝 **5. EXAMPLES (Real Scenarios)**
+
+[Examples giống như trong .cursorrules chính - bỏ qua để tiết kiệm space]
+
+---
+
+### ⚡ **6. BENEFITS OF ALWAYS MCP**
+
+[Benefits section giống như trong .cursorrules chính]
+
+---
+
+### 🎯 **AUTO RISK SCORE CALCULATOR** (LEGACY - Kept for Reference)
+
+AI PHẢI tự động tính Risk Score TRƯỚC KHI phân loại task:
+
+```python
+# Risk Score Formula
+Risk Score = (Complexity × Impact × Uncertainty) / Experience
+
+Complexity (1-5):
+  1 = Single file, simple logic
+  2 = 2-3 files, straightforward
+  3 = 4-6 files, moderate logic
+  4 = 7-10 files, complex logic
+  5 = 10+ files, very complex
+
+Impact (1-5):
+  1 = No business impact, cosmetic
+  2 = Minor feature, low risk
+  3 = Important feature, moderate risk
+  4 = Critical feature, high risk
+  5 = Core system, security, payment
+
+Uncertainty (1-5):
+  1 = Done many times, very familiar
+  2 = Done before, familiar
+  3 = Some experience, moderate confidence
+  4 = New territory, low confidence
+  5 = Never done, no experience
+
+Experience (1-5):
+  1 = Beginner with this tech
+  2 = Junior level
+  3 = Mid level
+  4 = Senior level
+  5 = Expert level
+
+RISK LEVEL MAPPING:
+- Risk Score < 5:    🟢 SIMPLE (No MCP)
+- Risk Score 5-10:   🟡 SMALL (Optional MCP)
+- Risk Score 10-20:  🔵 MEDIUM (MANDATORY MCP)
+- Risk Score > 20:   🔴 CRITICAL (ABSOLUTELY MANDATORY MCP)
+```
+
+**Example Calculations:**
+
+```
+Task: "Thêm field email vào Customer model"
+- Complexity: 2 (schema, API, frontend = 3 files)
+- Impact: 1 (no business impact)
+- Uncertainty: 1 (done many times)
+- Experience: 4 (senior level)
+→ Risk Score = (2×1×1)/4 = 0.5 → 🟢 SIMPLE → NO MCP
+
+Task: "Implement VNPay Payment Gateway"
+- Complexity: 4 (7+ files: gateway, webhook, API, UI, etc.)
+- Impact: 5 (payment = critical!)
+- Uncertainty: 4 (never done with VNPay)
+- Experience: 3 (mid level)
+→ Risk Score = (4×5×4)/3 = 26.7 → 🔴 CRITICAL → MANDATORY MCP
+
+Task: "Redesign Dashboard với 3 tabs"
+- Complexity: 3 (6 files: page, 3 tabs, 2 charts)
+- Impact: 3 (important feature)
+- Uncertainty: 2 (done similar before)
+- Experience: 4 (senior level)
+→ Risk Score = (3×3×2)/4 = 4.5 → 🟡 SMALL
+BUT: >3 files rule → Override to 🔵 MEDIUM → MANDATORY MCP
+```
+
+**AI MUST:**
+1. Calculate Risk Score for EVERY task before starting
+2. Show calculation in response to user
+3. Use score + 6 rules to determine final level
+4. Override to higher level if specific rules match
+
+---
+
+### 📋 **2. STRUCTURED MCP FEEDBACK TEMPLATE (Version 2.0)**
+
+Khi gọi MCP cho tasks 🔵🔴, PHẢI dùng format có cấu trúc này:
+
+```xml
+<invoke name="mcp_interactive-feedback_interactive_feedback">
+  <parameter name="project_directory">D:\HocTapLTHT\Dự án đã hoàn tất\QuanLyNhaTro-VIP</parameter>
+  <parameter name="summary">
+## TASK: [Task name/title]
+
+### 1. CONTEXT
+- Type: [Feature/Bugfix/Refactor/Security/Performance]
+- Risk Level: [🟢🟡🔵🔴] (Risk Score: X.X)
+- Affected Modules: [List modules]
+- Dependencies: [List dependencies nếu có]
+
+### 2. PROPOSED APPROACH
+- Architecture: [High-level design]
+- Files to Create: [List new files]
+- Files to Modify: [List existing files]
+- Database Changes: [Migration nếu có]
+- API Changes: [Breaking changes nếu có]
+- Performance Impact: [Expected impact]
+
+### 3. TECHNICAL DETAILS
+- Backend Changes:
+  * [Detail 1]
+  * [Detail 2]
+- Frontend Changes:
+  * [Detail 1]
+  * [Detail 2]
+- Testing Strategy:
+  * [Test plan]
+
+### 4. RISK ASSESSMENT
+- Security Risks: [Liệt kê hoặc "None identified"]
+- Performance Concerns: [Nếu có]
+- Breaking Changes: [Nếu có]
+- Rollback Plan: [How to undo if fails]
+
+### 5. ALTERNATIVES CONSIDERED
+- Option A: [Brief description] - Pros/Cons
+- Option B: [Brief description] - Pros/Cons
+- Recommended: [Selected option] because [reason]
+
+### 6. VALIDATION CRITERIA
+- [ ] Functionality works as expected
+- [ ] No security vulnerabilities
+- [ ] Performance acceptable (<Xms response time)
+- [ ] Tests pass (unit + integration)
+- [ ] Documentation updated
+- [ ] No breaking changes (or documented)
+  </parameter>
+</invoke>
+```
+
+**So với format cũ (simple):**
+- Cũ: `summary: "One-line description"` → Thiếu chi tiết
+- Mới: 6 sections đầy đủ → Rõ ràng, dễ review
+
+---
+
+### 🔍 **3. PRE-FLIGHT CHECKLIST - TỰ ĐỘNG**
+
+Trước KHI viết code, AI PHẢI tự check và SHOW:
+
+```markdown
+## PRE-FLIGHT CHECKLIST
+
+### Step 1: Risk Assessment
+- [ ] Calculate Risk Score: [Show calculation]
+- [ ] Task Level: [🟢/🟡/🔵/🔴]
+- [ ] MCP Required: [YES/NO]
+
+### Step 2: Early Error Detection (4 Risks)
+1. **Logic Risk:** [YES/NO - Explanation]
+   - Affects business logic/pricing/payment/workflow?
+   
+2. **Data Structure Risk:** [YES/NO - Explanation]
+   - Changes schema/model/migration?
+   
+3. **Security Risk:** [YES/NO - Explanation]
+   - Involves auth/password/token/API keys/payment?
+   
+4. **Error Handling Risk:** [YES/NO - Explanation]
+   - Has API/DB/File IO without proper error handling?
+
+### Step 3: Context Check
+- [ ] Files affected: [Count + List]
+- [ ] Dependencies needed: [List]
+- [ ] Breaking changes: [YES/NO]
+- [ ] Migration needed: [YES/NO]
+
+### Step 4: Decision
+- **Proceed:** [YES/NO]
+- **MCP Feedback:** [REQUIRED/OPTIONAL/NOT_NEEDED]
+- **Reason:** [Explain decision]
+
+---
+ONLY AFTER checklist passes → Proceed
+If MCP REQUIRED → Call MCP BEFORE coding
+```
+
+**Example Output:**
+
+```
+## PRE-FLIGHT CHECKLIST
+
+### Step 1: Risk Assessment
+- [x] Risk Score: (4×5×4)/3 = 26.7
+- [x] Task Level: 🔴 CRITICAL
+- [x] MCP Required: YES (Absolutely!)
+
+### Step 2: Early Error Detection
+1. **Logic Risk:** YES - Payment processing affects revenue
+2. **Data Risk:** YES - New PaymentTransaction model
+3. **Security Risk:** YES - Handling credentials & webhooks
+4. **Error Handling:** YES - External API needs robust handling
+
+### Step 3: Context Check
+- [x] Files: 8 (4 backend, 3 frontend, 1 migration)
+- [x] Dependencies: @nestjs/axios, vnpay-sdk
+- [x] Breaking changes: NO
+- [x] Migration: YES (new table)
+
+### Step 4: Decision
+- **Proceed:** NOT YET
+- **MCP Feedback:** REQUIRED (4/4 risks!)
+- **Reason:** Payment = critical + security sensitive
+
+🚨 STOPPING - Calling MCP first...
+```
+
+---
+
+### 📊 **4. METRICS TRACKING (Optional but Recommended)**
+
+AI có thể log metrics để improve:
+
+```markdown
+## Task Metrics Log
+
+After each task 🔵🔴:
+- Date: [YYYY-MM-DD]
+- Task: [Description]
+- Type: [🟢🟡🔵🔴]
+- Risk Score: [Number]
+- MCP Used: [YES/NO]
+- Time: [Minutes]
+- Success first try: [YES/NO]
+- Bugs: [Count]
+- User satisfaction: [1-10]
+
+Example:
+2025-01-27 | Dashboard Redesign | 🔵 | 12.5 | YES | 48min | YES | 0 bugs | 9/10
+```
+
+---
+
+### 🤖 **5. AI LEARNING LOOP (Self-Improvement)**
+
+Sau mỗi MCP session:
+
+```markdown
+## Learning Notes
+
+1. MCP feedback chính xác không?
+   - [YES/NO - What was right/wrong]
+
+2. Có gì AI missed?
+   - [List items]
+
+3. User insights:
+   - [Valuable feedback]
+
+4. Improve next time:
+   - [Action items]
+```
+
+---
+
+### 🔄 **6. DUAL LOOP DETECTION (Auto Error Tracking)**
+
+AI PHẢI tự động theo dõi số lần attempt cho cùng một lỗi:
+
+```markdown
+## Dual Loop Detection Logic
+
+### Khi nào trigger:
+- Cùng một error message xuất hiện 2 lần
+- Cùng một test case fail 2 lần
+- Cùng một symptom (behavior) sau 2 attempts khác nhau
+- User báo "vẫn bị lỗi" sau 1 lần fix
+
+### AI MUST track internally:
+- Attempt count: 1, 2, 3...
+- Each approach tried: [List]
+- Result of each: [Success/Fail + Why]
+- Current understanding: [What we know vs don't know]
+
+### When Attempt = 2 AND Status = Failed:
+🚨 STOP IMMEDIATELY
+→ Say to user:
+"Tôi đã thử 2 cách khác nhau nhưng lỗi vẫn chưa được giải quyết:
+- Attempt 1: [Approach] → [Result]
+- Attempt 2: [Approach] → [Result]
+
+Để tránh lãng phí thời gian, tôi sẽ gọi MCP Interactive Feedback 
+để có góc nhìn toàn diện và chiến lược tốt hơn..."
+
+→ CALL MCP với full context của 2 attempts
+
+### Benefits:
+- Tiết kiệm thời gian (không thử mù quáng)
+- Chất lượng cao hơn (được user review approach)
+- Học hỏi (user có thể có insight mà AI chưa nghĩ tới)
+- Minh bạch (user biết AI đang làm gì và tại sao)
+```
+
+**Example Detection:**
+
+```
+Attempt 1:
+AI: "Tôi sẽ fix bằng cách thay đổi regex..."
+[Implement] → Test → ❌ FAIL
+[Internal: attempt_count = 1, error_type = "email_validation"]
+
+Attempt 2:
+AI: "Để tôi thử approach khác - dùng library validator..."
+[Implement] → Test → ❌ FAIL
+[Internal: attempt_count = 2, error_type = "email_validation"]
+
+🚨 DUAL LOOP TRIGGERED:
+AI: "Tôi đã thử 2 lần (regex và validator library) nhưng vẫn chưa fix được.
+Để tôi gọi MCP Interactive Feedback để phân tích kỹ hơn..."
+
+→ Calls MCP with full context
+→ User reviews and provides direction
+→ AI continues with better approach ✅
+```
+
+---
+
+## ⚡ TL;DR - ĐỌC NÀY TRƯỚC! (Version 4.0)
+
+### 🚨 QUAN TRỌNG NHẤT - ULTRA-SAFE MODE!
+
+**VERSION 4.0 CORE RULE:**
+```
+🛡️ MỌI TASK → 2 ROUNDS MCP FEEDBACK!
+   ROUND 1: BEFORE code (approve design)
+   ROUND 2: AFTER code (approve implementation)
+   - Lớn hay nhỏ
+   - Dễ hay khó  
+   - Feature hay bugfix
+   - MỌI THỨ đều 2 rounds!
+```
+
+**MODES SYSTEM (Simplified in v4.0):**
+
+NORMAL MODE (95% tasks)
+├─ Trigger: Mọi task thông thường
+├─ MCP Rounds: 2 (BEFORE + AFTER code)
+├─ Round 1: Design approval (before coding)
+├─ Round 2: Implementation approval (after coding)
+├─ Flow: Analyze → MCP R1 → Approve → Code → MCP R2 → Approve → Done
+└─ Áp dụng: MỌI task (feature, bug fix, refactor, typo, etc.)
+
+DEBUG MODE (5% tasks) 🔥
+├─ Trigger: Đã làm 2+ lần nhưng VẪN CHƯA GIẢI QUYẾT
+├─ MCP Rounds: 3 (BEFORE + DEBUG ANALYSIS + CLEANUP)
+├─ Flow: Deep analysis → MCP R1 → Add debug logs → 
+│         Test → MCP R2 (analyze logs) → Fix → 
+│         MCP R3 (confirm + cleanup) → Remove logs → Done
+└─ Áp dụng: Mysterious bugs, 3-strike rule triggered
+
+**Note:** MODE 1 và MODE 2 cũ giờ hợp nhất thành NORMAL MODE (đều 2 rounds)
+
+**Khi nào DEBUG MODE (MODE 3)?** 🔥
+- Đã làm 2+ lần nhưng VẪN chưa giải quyết
+- 3-Strike Rule triggered
+- Add debug logs → Analyze → Fix → Remove logs
+- User PHẢI confirm trước khi remove logs
+
+**Cách gọi:**
+```xml
+<invoke name="mcp_interactive-feedback_interactive_feedback">
+  <parameter name="project_directory">D:\HocTapLTHT\Dự án đã hoàn tất\QuanLyNhaTro-VIP</parameter>
+  <parameter name="summary">[Detailed proposal với mode info]</parameter>
+</invoke>
+```
+
+**Flow (ULTRA SIMPLE - Version 4.0):**
+1. Phân tích task
+2. 🚨 GỌI MCP ROUND 1 (BEFORE CODE - ALWAYS!)
+3. ⏸️ Đợi approval design
+4. Implement code
+5. 🚨 GỌI MCP ROUND 2 (AFTER CODE - ALWAYS!)
+6. ⏸️ Đợi approval implementation
+7. Done ✅
+
+**Note:** Không còn phân loại task, MỌI task đều 2 rounds!
+
+**✅ LUÔN LÀM (Version 4.0):**
+- 🚨 Gọi MCP ROUND 1 TRƯỚC KHI code (MỌI task)
+- ⏸️ Đợi approval design
+- 💻 Code theo approval
+- 🚨 Gọi MCP ROUND 2 SAU KHI code (MỌI task)
+- ⏸️ Đợi approval implementation
+- ✅ Done!
+
+**❌ ĐỪNG BAO GIỜ:**
+- Skip bất kỳ round MCP nào (cả BEFORE và AFTER)
+- Code trước khi có approval Round 1
+- Deploy trước khi có approval Round 2
+- Nghĩ "task này đơn giản, skip Round 2"
+- Skip MCP vì bất kỳ lý do gì!
+
+---
+
+## Interactive Feedback - ALWAYS ON! (Version 4.0 - ULTRA-SAFE)
+
+### ⚠️ **QUAN TRỌNG: 2 ROUNDS MCP - EVERY TASK**
+
+### 🛡️ **Triết lý: "Review Before AND After"**
+
+**VERSION 4.0 - ULTRA-SAFE MODE:**
+- ✅ **MỌI task → 2 ROUNDS MCP**
+- ✅ Round 1: BEFORE code (approve design)
+- ✅ Round 2: AFTER code (approve implementation)
+- ❌ Không còn phân loại task
+- ❌ Không còn "skip round 2 for simple tasks"
+- ✅ **100% visibility trước VÀ sau code**
+
+**Tại sao?**
+1. **Even "simple" tasks can have hidden complexity**
+   - Typo fix có thể break logic
+   - Field thêm có thể cần cascade changes
+   - Small bug có thể indicate bigger issue
+
+2. **User wants control over EVERYTHING**
+   - No surprises
+   - Full visibility
+   - Can suggest better approaches
+
+3. **Time cost is MINIMAL**
+   - MCP review: 2-5 phút
+   - Refactor if wrong: 30-120 phút
+   - ROI: 10-20x savings!
+
+4. **Quality over speed**
+   - Better to be slow & right
+   - Than fast & wrong
+
+---
+
+### 📋 **Checklist Trước Khi Bắt Đầu Task (VERSION 4.0 - ULTRA-SAFE)**
+
+```
+[ ] Bước 1: Đọc yêu cầu user
+
+[ ] Bước 2: Phân tích task:
+    Q1: Files affected?
+        → List all files
+    
+    Q2: Notable points?
+        → Database, API, Breaking, Dependencies, Risks
+
+[ ] Bước 3: 🚨 GỌI MCP ROUND 1 (BEFORE CODE - MANDATORY!)
+    ✅ Tool: mcp_interactive-feedback_interactive_feedback
+    ✅ Params: project_directory + detailed summary
+    ✅ Show design proposal
+    ✅ ĐỢI user approval design
+    ❌ ĐỪNG code trước khi có approval
+
+[ ] Bước 4: Implement theo approved design
+
+[ ] Bước 5: 🚨 GỌI MCP ROUND 2 (AFTER CODE - MANDATORY!)
+    ✅ Show actual implementation
+    ✅ ĐỢI user approval code
+    
+[ ] Done ✅
+
+**Note Version 4.0:** MỌI task đều 2 rounds MCP (BEFORE + AFTER code)!
+---
+
+## 🛡️ Risk Analysis - Phân Tích Rủi Ro (Version 4.0)
+
+Trước KHI gọi MCP, AI PHẢI phân tích 4 nhóm rủi ro để include trong proposal:
+
+### 📋 4 RISK CATEGORIES:
+
+1️⃣ **Logic Risk**
+- Task có ảnh hưởng business logic? (pricing, payment, workflow)
+  → Note trong MCP proposal để user aware
+
+2️⃣ **Data Structure Risk**  
+- Có thay đổi model/schema/database/migration?
+  → Include migration strategy trong proposal
+  → Ask về constraints, relations, cascade behavior
+
+3️⃣ **Security Risk**
+- Có liên quan JWT, password, token, API key, payment?
+  → HIGHLIGHT trong MCP proposal
+  → Ask về security policy & best practices
+
+4️⃣ **Error Handling Risk**
+- Có chạm API/DB/File IO?
+  → Include error handling plan trong proposal
+  → Show try/catch strategy
+
+### 🎯 PURPOSE (Changed in v4.0):
+
+**OLD (v2.0):** Dùng để DECIDE có gọi MCP không
+**NEW (v4.0):** Dùng để ENRICH MCP proposal (cả 2 rounds)
+
+→ Mọi task đều gọi 2 rounds MCP rồi, nhưng phân tích risks giúp:
+- User hiểu rõ implications
+- AI plan better approach
+- Catch potential issues early
+- Clear communication
+
+### ✅ WORKFLOW:
+
+1. Analyze 4 risks
+2. Note findings
+3. Include trong MCP proposal
+4. User reviews with full context
+5. Approve với confidence!
+
+---
+```
+
+---
+
+### 🛠️ **Cách Gọi MCP Interactive Feedback Tool**
+
+**Tool name:** `mcp_interactive-feedback_interactive_feedback`
+
+**Required Parameters:**
+```typescript
+{
+  project_directory: string,  // Full path: D:\HocTapLTHT\Dự án đã hoàn tất\QuanLyNhaTro-VIP
+  summary: string            // One-line summary: "Task description"
+}
+```
+
+**Example Call:**
+```xml
+<invoke name="mcp_interactive-feedback_interactive_feedback">
+  <parameter name="project_directory">D:\HocTapLTHT\Dự án đã hoàn tất\QuanLyNhaTro-VIP</parameter>
+  <parameter name="summary">Task description here</parameter>
+</invoke>
+```
+
+**Khi nào GỌI:**
+- ✅ Trước khi implement 🔵 hoặc 🔴 tasks
+- ✅ Ngay sau khi phân tích yêu cầu và đề xuất approach
+- ✅ TRƯỚC KHI viết code, tạo files mới, hoặc refactor
+- ✅ **Cùng một lỗi 2 lần chưa giải quyết được** (áp dụng cho cả tasks 🟡)
+
+**Khi nào KHÔNG GỌI:**
+- ❌ Tasks 🟢 hoặc 🟡 (trừ khi user yêu cầu hoặc 2 lần cùng lỗi)
+- ❌ Sau khi đã implement xong (quá muộn!)
+- ❌ Khi user chỉ hỏi thông tin/giải thích
+
+---
+
+### 📝 **Examples Cụ Thể**
+
+**Example 1: Dashboard Redesign (Task 🔵)**
+```
+User: "Tôi muốn chỉnh sửa Dashboard dễ sử dụng hơn"
+
+✅ ĐÚNG:
+1. Phân tích yêu cầu
+2. Đề xuất: 3 tabs + 4 charts
+3. 🚨 GỌI MCP Interactive Feedback
+4. Đợi user approve
+5. Implement
+
+❌ SAI:
+1. Phân tích yêu cầu
+2. Đề xuất approach
+3. Implement luôn (BỎ QUA feedback!)
+```
+
+**Example 2: Add Field to Model (Task 🟡)**
+```
+User: "Thêm field 'notes' vào Customer model"
+
+✅ ĐÚNG:
+1. Thêm field vào schema
+2. Migration
+3. Update API/Frontend
+4. ❌ KHÔNG cần feedback (task nhỏ)
+
+❌ SAI:
+1. Gọi MCP feedback cho task đơn giản (lãng phí!)
+```
+
+**Example 3: Authentication System (Task 🔴)**
+```
+User: "Implement JWT authentication với refresh tokens"
+
+✅ ĐÚNG:
+1. Phân tích requirements
+2. Design architecture (JWT strategy, token storage, refresh flow)
+3. 🚨 GỌI MCP Interactive Feedback
+4. Đợi approval
+5. Implement theo feedback
+6. (Optional) Request code review nếu user muốn
+
+❌ SAI:
+1. Research JWT libraries
+2. Implement luôn (NGUY HIỂM - security issue!)
+```
+
+**Example 4: Dual Loop Rule - Same Error 2 Times (Task 🟡 → 🔵)**
+```
+User: "Fix lỗi validation email không hoạt động"
+
+Attempt 1:
+1. Fix regex pattern
+2. Test → VẪN LỖI ❌
+
+Attempt 2:
+1. Fix case sensitivity
+2. Test → VẪN LỖI ❌
+
+🚨 DUAL LOOP TRIGGER:
+"Tôi đã thử 2 lần nhưng lỗi vẫn chưa được giải quyết. 
+Để tôi gọi MCP Interactive Feedback để có góc nhìn toàn diện hơn..."
+
+→ GỌI MCP với summary:
+"## TASK: Fix email validation - 2 attempts failed
+### 1. CONTEXT
+- Type: Bugfix
+- Risk Level: 🔵 (Dual Loop triggered)
+- Attempts: 2 (regex fix, case sensitivity fix)
+- Still failing: [Describe current behavior]
+
+### 2-6: [Full analysis]..."
+
+✅ ĐÚNG: Nhận biết pattern và escalate sau 2 lần fail
+❌ SAI: Cố gắng lần 3, 4, 5... mà không gọi MCP (lãng phí thời gian!)
+```
+
+---
+
+## Tool Usage - TIẾT KIỆM TOKENS
+
+### Quy tắc đọc file:
+1. **KHÔNG đọc file nếu không cần thiết**
+2. **Ưu tiên:** `grep` > `codebase_search` > `read_file`
+   - `grep`: Tìm exact text (tên class, function, import, string literal)
+   - `codebase_search`: Hiểu semantic, tìm logic, behavior
+   - `read_file`: Chỉ khi cần đọc toàn bộ hoặc có line numbers cụ thể
+
+3. **Parallel tool calls:** Gọi nhiều tools cùng lúc nếu không phụ thuộc lẫn nhau
+   - Batch multiple searches cùng lúc
+   - Batch todo updates với code changes
+   - Maximize parallel execution cho speed
+
+4. **Search strategy:**
+   - Bắt đầu với scope hẹp nếu biết vị trí
+   - Mở rộng dần nếu không tìm thấy
+   - Không search repeated nếu đã có context
+
+5. **File editing strategy:**
+   - `search_replace`: Ưu tiên cho edit một phần file (safer)
+   - `write`: Chỉ dùng cho file mới hoặc rewrite toàn bộ
+   - ALWAYS read existing files before writing
+   - PREFER editing over creating new files
+   - Cleanup temporary files sau khi xong task
+---
+
+### 🧠 Safe Edit Guard - Chống Ghi Sai File
+
+Trước khi viết vào bất kỳ file nào, AI PHẢI kiểm tra:
+- File có nằm trong danh sách `ignore` hoặc `1.Backup/` không? → ❌ Dừng.
+- File có tên chứa `.config`, `.env`, `.key`, `.secret` không? → ❌ Không ghi.
+- File có commit history trong 24h gần nhất? → ⚠️ Hỏi user trước khi overwrite.
+
+Nếu vi phạm 1 trong 3 điều kiện trên → DỪNG và **Feedback** ngay (qua MCP nếu có).
+
+---
+
+### Files & Directories to ALWAYS Ignore:
+```
+# Dependencies
+node_modules/
+vendor/
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+
+# Backups
+*.backup
+*.bak
+1.Backup/
+backup/
+
+# Build outputs
+dist/
+build/
+out/
+target/
+*.map
+.next/
+backend/dist/
+android/
+
+# Database
+*.db
+dev.db
+
+# Logs
+*.log
+logs/
+backend.log
+frontend.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/settings.json
+
+# Uploads/Media (thường không cần đọc)
+uploads/
+media/
+static/uploads/
+backend/uploads/
+```
+
+---
+
+## Communication Style
+- **Ngôn ngữ:** Tiếng Việt
+- **Tone:** Ngắn gọn, súc tích, thân thiện, chuyên nghiệp
+- **Format output:**
+  - Giải thích ngắn (2-3 câu) trước khi code
+  - Hiện code changes (dùng diff format khi có thể)
+  - Không dài dòng, không lặp lại thông tin
+  - Không giải thích quá chi tiết về syntax cơ bản
+  - KHÔNG nói về tool names với user (nói "Tôi đang tìm..." thay vì "I'll use grep tool...")
+  - KHÔNG giải thích lại những gì user đã biết
+
+### 🎯 **SAU KHI GỌI MCP FEEDBACK - QUY TẮC VÀNG:**
+
+**AI PHẢI hỏi lại bằng TIẾNG VIỆT ĐỞN GIẢN:**
+
+```
+❌ KHÔNG ĐƯỢC:
+"Tôi đã gọi MCP Feedback với approach sử dụng eager loading và N+1 query optimization..."
+"Please review the migration strategy for schema modification..."
+"Root cause analysis indicates serialization issue..."
+
+✅ BẮT BUỘC:
+"Tôi đề xuất làm như sau:
+1. Sửa file A - thêm field X
+2. Sửa file B - cập nhật form
+3. Chạy migration để thêm cột vào database
+
+Bạn đồng ý chưa?"
+
+"Tôi tìm ra nguyên nhân lỗi rồi:
+- Vấn đề: Code đang convert array thành object
+- Giải pháp: Bỏ decorator đang gây lỗi
+
+Tôi có nên sửa không?"
+```
+
+**NGUYÊN TẮC:**
+1. Dùng từ đơn giản thay vì thuật ngữ:
+   - ✅ "thêm cột" thay vì "migration"
+   - ✅ "tải data cùng lúc" thay vì "eager loading"
+   - ✅ "chuyển đổi" thay vì "serialization"
+   - ✅ "nguyên nhân" thay vì "root cause"
+
+2. Cấu trúc câu hỏi rõ ràng:
+   - Tôi sẽ làm [A, B, C]
+   - Bạn đồng ý không?
+   - Hoặc bạn muốn [cách khác]?
+
+3. Giải thích bằng hình ảnh cụ thể:
+   - ❌ "Apply transaction để ensure data consistency"
+   - ✅ "Chạy 3 bước cùng lúc, nếu 1 bước lỗi thì hủy cả 3"
+
+### Response Templates (Follow These)
+
+**Khi implement feature:**
+```
+[2-3 câu giải thích approach]
+
+Thay đổi:
+- File A: [Mô tả ngắn]
+- File B: [Mô tả ngắn]
+
+[Show code với line numbers]
+
+Done! Test bằng [command/action]
+```
+
+**Khi fix bug:**
+```
+Nguyên nhân: [1 câu]
+
+Fix: [1-2 câu solution]
+
+[Show code changes]
+
+Đã fix! ✅
+```
+
+**Khi giải thích code:**
+```
+[Giải thích logic chính trong 2-3 câu]
+
+Key points:
+- Point 1
+- Point 2
+
+[Code example nếu cần]
+```
+
+---
+
+## Code Standards - Universal Principles
+
+### Making Code Changes - Best Practices:
+- **Implement rather than suggest**: Infer intent và act accordingly
+- **Use standard tools**: Không tạo helper scripts/workarounds
+- **Quality focus**: Write general-purpose, high-quality solutions
+- **Create dependency management**: requirements.txt, package.json với versions
+- **Modern UI/UX**: Đẹp, hiện đại khi build web apps
+- **NEVER generate**: Binary, extremely long hashes, non-textual code
+- **Fix linter errors**: Nếu introduce errors, fix ngay
+
+### General Best Practices:
+- **DRY** (Don't Repeat Yourself): Tránh duplicate code
+- **KISS** (Keep It Simple, Stupid): Giải pháp đơn giản nhất
+- **YAGNI** (You Aren't Gonna Need It): Không code tính năng chưa cần
+- **SOLID principles** cho OOP
+- **Clean Code**: Tên biến/hàm rõ ràng, hàm ngắn gọn, logic dễ hiểu
+
+### Type Safety:
+- TypeScript: strict mode bắt buộc
+- Python: type hints cho functions/methods
+- Java/C#: leverage strong typing
+- Go: interface-based design
+
+### Error Handling:
+```
+BẮT BUỘC cho:
+- Database operations
+- External API calls
+- File I/O operations
+- User input processing
+- Network requests
+
+Format error messages:
+- Tiếng Việt, user-friendly
+- Context đầy đủ để debug
+- Không expose sensitive info (stack traces, credentials)
+
+---
+
+## 🔍 Auto Error Checking (Runtime + Generation Level)
+
+### Khi sinh code:
+- Mọi đoạn code gọi API, DB, hoặc xử lý dữ liệu từ người dùng phải có:
+  - `try/catch` hoặc `if (!data)` trước khi sử dụng biến.
+  - Validation hoặc fallback cho `undefined`/`null`.
+
+### Khi runtime (tại backend):
+- Log tất cả exceptions có context (request id, user id, function).
+- Với lỗi hệ thống (500+), ghi log nhưng không expose chi tiết cho người dùng.
+
+### AI PHẢI tự xác minh sau khi sinh code:
+1. Có bất kỳ hàm nào có khả năng throw lỗi mà không được catch?
+2. Có bất kỳ field nào từ user input chưa validate?
+3. Có bất kỳ async call nào không await?
+4. Có bất kỳ file hoặc API được gọi mà không kiểm tra kết quả?
+
+Nếu có ≥1 cảnh báo → dừng và **feedback lại user**.
+
+---
+```
+
+### Validation:
+- Validate ALL user inputs
+- Check foreign keys/references trước khi delete/update
+- Sanitize data trước khi lưu database
+- Rate limiting cho public APIs
+
+### Security:
+- Không hardcode credentials, API keys, secrets
+- Use environment variables
+- Hash passwords (bcrypt, argon2)
+- Escape user input tránh injection
+- HTTPS cho production
+
+### Performance:
+- Tránh N+1 queries (use eager loading)
+- Pagination cho list endpoints
+- Index database cho foreign keys & search fields
+- Cache cho data ít thay đổi
+- Async/await cho I/O operations
+
+### Database:
+- Transactions cho operations liên quan nhiều tables
+- Soft delete thay vì hard delete khi cần audit trail
+- Migration files cho mọi schema changes
+- Backup trước khi migrate production
+
+---
+
+## Git Commits & Version Control
+
+**Format:** `<type>: <message tiếng Việt>`
+
+**Types:**
+- `feat`: Tính năng mới
+- `fix`: Sửa bug
+- `refactor`: Tái cấu trúc code (không thay đổi behavior)
+- `perf`: Cải thiện performance
+- `style`: Format code, thêm semicolons, etc.
+- `docs`: Documentation
+- `test`: Thêm/sửa tests
+- `chore`: Update dependencies, build config
+
+**Examples:**
+```
+feat: thêm API export Excel khách hàng
+fix: sửa lỗi tính toán tổng tiền sai khi có discount
+refactor: tách UserService thành UserService và AuthService
+perf: thêm index cho customer_name field
+docs: cập nhật API documentation cho endpoint /orders
+```
+
+**⚠️ GIT RULES - QUAN TRỌNG:**
+- **CHỈ commit khi user yêu cầu EXPLICITLY** - Đừng tự ý commit!
+- NEVER force push (--force)
+- NEVER hard reset
+- NEVER skip hooks (--no-verify, --no-gpg-sign)
+- NEVER update git config
+- WARN user nếu họ yêu cầu force push to main/master
+
+---
+
+## Workflow - ULTRA-SAFE MODE (Version 4.0)
+
+### ⚠️ **REMINDER: MỌI TASK → 2 ROUNDS MCP - ALWAYS!**
+
+### 📋 UNIVERSAL WORKFLOW (Áp dụng cho MỌI tasks):
+
+```
+BƯỚC 1: PHÂN TÍCH TASK
+───────────────────
+- Hiểu yêu cầu user
+- Files affected? [List]
+- Risks/Notes? [List]
+
+BƯỚC 2: 🚨 MCP ROUND 1 - BEFORE CODE
+───────────────────
+- Đề xuất approach chi tiết
+- Show files sẽ thay đổi
+- Explain technical details
+- ⏸️ WAIT for design approval
+   
+BƯỚC 3: IMPLEMENT CODE
+───────────────────
+- Code theo approved design
+- Follow best practices
+- Add error handling
+
+BƯỚC 4: 🚨 MCP ROUND 2 - AFTER CODE
+───────────────────
+- Show actual code changes
+- Verify implementation
+- Check edge cases
+- ⏸️ WAIT for code approval
+
+BƯỚC 5: DONE
+───────────────────
+✅ Deployed với 2 rounds approval
+```
+
+### ✨ **SIMPLIFIED** - Same process for ALL tasks (2 rounds MCP)!
+
+### 💬 Communication Style (Version 4.0 - ULTRA-SAFE):
+
+**Before EVERY task, AI MUST say:**
+```
+Để tôi phân tích task này (Version 4.0 - ULTRA-SAFE MODE):
+
+## TASK ANALYSIS
+
+**Files affected:**
+- [List all files]
+
+**Notable points:**
+- Database changes: [YES/NO - details]
+- API changes: [YES/NO - details]
+- Breaking changes: [YES/NO - details]
+- Dependencies: [If any]
+- Risks: [If any]
+
+---
+
+**Theo Version 4.0:** MỌI task → 2 ROUNDS MCP!
+
+🚨 ROUND 1: Tôi sẽ GỌI MCP để approve DESIGN...
+
+[Calls MCP Round 1 với detailed proposal]
+
+⏸️ Đang đợi bạn approve design...
+
+[After approval và implementation]
+
+🚨 ROUND 2: Tôi sẽ GỌI MCP để approve CODE...
+
+[Calls MCP Round 2 với actual code]
+
+⏸️ Đang đợi bạn approve implementation...
+```
+
+
+### 🧹 **Auto Memory Cleanup (TỰ ĐỘNG):**
+- **Khi nào cleanup:** 
+  - Ngày 1 hàng tháng: AI tự động kiểm tra và nhắc user cleanup memories >3 tháng
+  - Hoặc khi user yêu cầu: "Cleanup old memories"
+- **Cách thực hiện:**
+  - Dùng tool: `mcp_memory_delete_before_date` với `before_date = (today - 90 days)`
+  - Chỉ xóa memories có tag: "temporary", "test", "debug", "development"
+  - KHÔNG xóa memories có tag: "important", "knowledge", "documentation", "solution", "reference"
+  - Thông báo user trước: "Tôi sẽ xóa X memories cũ hơn 3 tháng với tag 'temporary' hoặc 'test'..."
+  - Sau khi xóa: "Đã xóa X memories cũ hơn 3 tháng"
+
+### 📝 TODO Management:
+**Khi nào TẠO todos:**
+- Tasks phức tạp (>3 steps)
+- Multi-step features
+- User yêu cầu explicitly
+
+**Khi nào KHÔNG tạo todos:**
+- Tasks đơn giản (<3 steps)
+- Single straightforward changes
+- NEVER include: linting, testing, searching codebase
+
+**Quy tắc vàng:**
+- Nếu không chắc → Feedback
+- Nếu chắc chắn → Làm luôn
+- Nghi ngờ gì về requirements → Hỏi ngay, đừng đoán
+- Infer user intent → act accordingly, không hỏi quá nhiều
+
+---
+
+## ❌ Common Mistakes to AVOID
+
+### 1. Over-Engineering
+```
+❌ BAD: Tạo abstract factory pattern cho 1 class đơn giản
+✅ GOOD: Start simple, refactor khi cần
+
+❌ BAD: Tạo 5 layers cho logic đơn giản
+✅ GOOD: Controller → Service → Database (đủ rồi)
+```
+
+### 2. Premature Optimization
+```
+❌ BAD: Optimize mọi query ngay từ đầu
+✅ GOOD: Make it work → Make it right → Make it fast
+
+❌ BAD: Cache everything "just in case"
+✅ GOOD: Measure first, optimize bottlenecks
+```
+
+### 3. Inconsistent Naming
+```
+❌ BAD: getUser, fetchCustomer, retrieveOrder
+✅ GOOD: getUser, getCustomer, getOrder (consistent)
+
+❌ BAD: user_service.ts, CustomerService.ts
+✅ GOOD: user.service.ts, customer.service.ts
+```
+
+### 4. Missing Error Handling
+```
+❌ BAD:
+const user = await db.user.findUnique({ where: { id } });
+return user.name; // Crash nếu null!
+
+✅ GOOD:
+const user = await db.user.findUnique({ where: { id } });
+if (!user) throw new NotFoundException('User not found');
+return user.name;
+```
+
+### 5. Hardcoding Values
+```
+❌ BAD:
+const API_KEY = "sk-abc123...";
+const DB_URL = "postgresql://localhost:5432/mydb";
+
+✅ GOOD:
+const API_KEY = process.env.API_KEY;
+const DB_URL = process.env.DATABASE_URL;
+```
+
+### 6. Ignoring Existing Patterns
+```
+❌ BAD: Tạo pattern mới khi project đã có pattern
+✅ GOOD: Follow existing patterns trong codebase
+
+Ví dụ: Nếu project dùng Services → dùng Services
+        Đừng đột nhiên introduce Repositories
+```
+
+### 7. Too Much / Too Little Comments
+```
+❌ BAD:
+// This function adds two numbers
+function add(a, b) { return a + b; } // Obviously!
+
+❌ BAD:
+function calculateDiscountedPriceWithTaxAndShipping(items, coupon, location) {
+  // No comments explaining complex logic
+}
+
+✅ GOOD:
+// Calculate final price: base + tax + shipping - discount
+// Tax rate depends on location, discount from coupon if valid
+function calculateFinalPrice(items, coupon, location) {
+  // Implementation with comments at key steps
+}
+```
+
+---
+
+## 🎯 Decision Making Guide
+
+### "Should I ask or just do it?"
+
+```
+Confidence Level Guide:
+
+100% Sure (DOANH domain logic):
+├─ Fix obvious typo: Just do it
+├─ Add simple validation: Just do it
+└─ Follow clear instruction: Just do it
+
+80-99% Sure (Reasonable inference):
+├─ Implementation approach: Do it, explain reasoning
+├─ Tech choice (multiple valid options): Do it, mention alternatives
+└─ Naming/structure: Follow project patterns
+
+50-79% Sure (Need validation):
+├─ Architecture decision: Ask first
+├─ Breaking changes: Ask first
+└─ Multiple valid approaches: Ask which one
+
+< 50% Sure (Ambiguous):
+├─ Unclear requirements: Ask for clarification
+├─ Business logic: Ask domain expert (user)
+└─ Security implications: Ask before proceeding
+```
+
+### "Which approach should I use?"
+
+```
+Priority Order:
+
+1. Follow existing project patterns (highest priority)
+   └─ Don't introduce new patterns without reason
+
+2. Use framework conventions
+   └─ NestJS → Modules/Controllers/Services
+   └─ Next.js → App Router conventions
+   
+3. Apply SOLID/DRY/KISS principles
+   └─ Balance between principles and pragmatism
+
+4. Consider project phase
+   └─ MVP/Prototype: Speed > Perfection
+   └─ Production: Reliability > Speed
+   
+5. User preference (if mentioned)
+   └─ "Keep it simple" → Minimal solution
+   └─ "Scalable" → Add abstractions
+```
+
+---
+
+## Testing & Quality Assurance
+
+---
+
+## ⚙️ Quick Self QA (AI PHẢI TỰ TEST)
+
+Trước khi đề xuất commit, AI phải tự kiểm tra:
+
+- ✅ Code có chạy được (compile/build không lỗi)
+- ✅ Không có syntax/linter warning
+- ✅ Có ít nhất 1 test đơn giản (unit hoặc manual) chứng minh output đúng
+- ✅ Error handling đầy đủ (thử edge case: null, timeout, invalid input)
+- ✅ Không có secret, token, hardcode
+- ✅ Không đụng file ngoài phạm vi task
+
+Nếu bất kỳ mục nào ❌ → Feedback user trước khi commit.
+
+---
+
+### Before Committing:
+- [ ] Code compiles/runs without errors
+- [ ] No linter warnings (hoặc justify nếu có)
+- [ ] Test edge cases quan trọng
+- [ ] Error handling đầy đủ
+- [ ] No console.log/print debug statements còn sót
+
+### Linter Commands (chạy khi cần):
+```bash
+# JavaScript/TypeScript
+npm run lint
+eslint --fix .
+
+# Python
+ruff check .
+black .
+mypy .
+
+# Go
+go vet ./...
+golangci-lint run
+
+# Java
+mvn checkstyle:check
+```
+
+---
+
+## Framework-Specific Notes
+
+### Frontend Framework: **React 19 + TypeScript + Vite**
+
+**Patterns & Structure:**
+- **Component Structure**: Functional components only (no class components)
+- **State Management**: React Context API + Custom Hooks (useAppData)
+- **Data Fetching**: Direct service calls from components/hooks
+- **Form Handling**: Controlled components với useState
+- **Styling**: Inline styles hoặc CSS modules (no external CSS framework detected)
+- **Type Safety**: TypeScript strict mode, types defined in `types.ts`
+
+**Key Conventions:**
+```typescript
+// Example 1: Component pattern (Functional with hooks)
+import React, { useState, useEffect } from 'react';
+import { localDb } from '../services/localStorageDb';
+
+const MyComponent: React.FC = () => {
+    const [data, setData] = useState<SomeType[]>([]);
+    
+    useEffect(() => {
+        loadData();
+    }, []);
+    
+    const loadData = async () => {
+        const result = await localDb.getSomething();
+        setData(result);
+    };
+    
+    return <div>{/* JSX */}</div>;
+};
+
+// Example 2: State Management (Context API)
+import { AppProvider, useAppData } from '../hooks/useAppData';
+
+// Provider wraps app
+<AppProvider>
+    <App />
+</AppProvider>
+
+// Use in component
+const { rooms, tenants, refreshData } = useAppData();
+
+// Example 3: Data Fetching (Service layer)
+import { localDb } from '../services/localStorageDb';
+
+const rooms = await localDb.getRooms();
+const tenant = await localDb.getTenant(id);
+await localDb.createRoom(roomData);
+```
+
+---
+
+### Database: **SQLite (Capacitor) + localStorage (Web Fallback)**
+
+**Common operations:**
+```typescript
+// Example 1: CRUD operations (Service layer abstraction)
+import { localDb } from '../services/localStorageDb';
+
+// Get all
+const rooms = await localDb.getRooms();
+const tenants = await localDb.getTenants();
+const leases = await localDb.getLeases();
+
+// Get by ID
+const room = await localDb.getRoom(roomId);
+const tenant = await localDb.getTenant(tenantId);
+
+// Create
+await localDb.createRoom(roomData);
+await localDb.createTenant(tenantData);
+await localDb.createLease(leaseData);
+
+// Update
+await localDb.updateRoom(roomId, roomData);
+await localDb.updateTenant(tenantId, tenantData);
+
+// Delete
+await localDb.deleteRoom(roomId);
+await localDb.deleteTenant(tenantId);
+
+// Example 2: Database Service Pattern
+// services/database.ts - Main SQLite service (native)
+// services/localStorageDb.ts - Web fallback (localStorage)
+
+// Platform detection is handled automatically
+// Web → localStorage, Native → SQLite
+
+// Example 3: Query with relations
+// Service layer handles joins internally
+const lease = await localDb.getLease(leaseId);
+// Returns lease with related room and tenant data
+
+// Example 4: Database initialization
+// Automatic on app start via DatabaseService.init()
+// Creates tables if not exist
+// Handles migrations if needed
+```
+
+---
+
+**💡 TIP:** Tham khảo templates ở cuối file (NestJS, FastAPI, Django, Spring Boot) để điền phần này
+
+---
+
+## Project-Specific Conventions
+
+**API Conventions:**
+- **No Backend API**: Đây là ứng dụng offline-first, sử dụng local database (SQLite/localStorage)
+- **Data Access**: Tất cả qua service layer (`services/database.ts`, `services/localStorageDb.ts`)
+- **Async Pattern**: Tất cả database operations đều async/await
+- **Error Handling**: Try-catch trong service layer, throw errors lên component
+
+**Naming Conventions:**
+- **Files**: 
+  - Components: PascalCase (e.g., `DashboardView.tsx`, `AddTenantModal.tsx`)
+  - Services: camelCase (e.g., `database.ts`, `localStorageDb.ts`)
+  - Utils: camelCase (e.g., `security.ts`)
+  - Types: camelCase (e.g., `types.ts`)
+- **Functions/Methods**: camelCase (e.g., `getRooms()`, `createTenant()`)
+- **Components**: PascalCase (e.g., `DashboardView`, `AddTenantModal`)
+- **Constants**: UPPER_SNAKE_CASE (e.g., `DB_NAME`, `STORAGE_KEY`)
+- **Types/Interfaces**: PascalCase (e.g., `Room`, `Tenant`, `Lease`)
+
+**Key Directories:**
+- **Config**: Root level (`vite.config.ts`, `capacitor.config.ts`, `tsconfig.json`)
+- **Types**: Root level (`types.ts`)
+- **Services/Business Logic**: `services/` (database, billing, helpers)
+- **Frontend Pages**: `views/` (DashboardView, RoomsView, InvoicesView, etc.)
+- **Frontend Components**: `components/` (reusable components + modals/)
+- **Hooks**: `hooks/` (useAppData - main app state hook)
+- **Utils**: `utils/` (security utilities)
+- **Tests**: Không có test directory hiện tại
+
+**Important Files:**
+- **Types**: `types.ts` - Tất cả TypeScript interfaces/types
+- **Database Service**: 
+  - `services/database.ts` - SQLite service cho native
+  - `services/localStorageDb.ts` - localStorage service cho web
+- **State Management**: `hooks/useAppData.ts` - Main Context API hook
+- **App Entry**: 
+  - `index.tsx` - React entry point
+  - `App.tsx` - Main app component với routing logic
+- **Environment config**: `.env.local` (cho GEMINI_API_KEY - có thể không dùng nữa)
+- **Build Config**: `vite.config.ts`, `capacitor.config.ts`
+- **Native Project**: `android/` - Capacitor Android project
+
+**Business Logic Notes:**
+- **Room Lifecycle**: 
+  - `isActive: boolean` - Phòng đang hoạt động hay không
+  - Room có thể có nhiều leases theo thời gian
+  
+- **Lease Lifecycle**: 
+  - `status: 'active' | 'inactive'` - Hợp đồng đang hiệu lực hay không
+  - `startDate`, `endDate` - Thời gian thuê
+  - Hỗ trợ nhiều người thuê (participants array) - người thuê chính + người ở ghép
+  - `paymentMode: 'advance' | 'deposit'` - Đóng trước vs Cọc cố định
+  
+- **Invoice Lifecycle**: 
+  - Generated từ leases + meter readings
+  - `status: 'pending' | 'paid' | 'overdue'`
+  - Support partial payments
+  - Auto-calculate từ electricity/water readings
+  
+- **Meter Readings**: 
+  - `type: 'electric' | 'water'`
+  - Readings link to rooms và leases
+  - Tính toán chi phí tự động theo unit price
+  
+- **Maintenance**: 
+  - Track bảo trì/phục vụ cho phòng
+  - Link to rooms, có thể link to leases
+  
+- **Security**: 
+  - Password protection cho app (stored in localStorage)
+  - Setup on first launch
+  - Verify before sensitive operations
+  
+- **Important Workflows**: 
+  1. **Tạo Lease**: Room → Tenant → Lease → Auto-calculate rent
+  2. **Generate Invoices**: Select leases → Generate invoices → Calculate from readings
+  3. **Record Readings**: Add reading → Link to room/lease → Auto-update invoices
+  4. **Payment**: Invoice → Partial/Full payment → Update status
+
+---
+
+## Quick Reference Card - ULTRA-SAFE MODE (v4.0)
+
+```
+🚀 VERSION 4.0 - ULTRA-SAFE MODE (Maximum Safety):
+✅ MỌI task → 2 ROUNDS MCP - ALWAYS!
+✅ Round 1: BEFORE code (approve design)
+✅ Round 2: AFTER code (approve implementation)
+✅ No task classification needed
+✅ 100% visibility before AND after coding
+✅ Zero surprises for user
+✅ Maximum safety & quality
+
+🎯 WORKFLOW - SIMPLIFIED:
+1. Phân tích task
+2. 🚨 ROUND 1: Call MCP BEFORE code
+3. ⏸️ Wait for design approval
+4. Implement code
+5. 🚨 ROUND 2: Call MCP AFTER code
+6. ⏸️ Wait for code approval
+7. Done ✅
+
+📋 TWO MODES (Simplified in v4.0):
+
+NORMAL MODE (95% tasks)
+├─ Trigger: Mọi task thông thường
+├─ MCP Rounds: 2 (BEFORE + AFTER code)
+├─ Round 1: Design approval (before coding)
+├─ Round 2: Implementation approval (after coding)
+├─ Flow: Analyze → MCP R1 → Approve → Code → MCP R2 → Approve → Done
+└─ Áp dụng: MỌI task (feature, bug fix, refactor, typo, etc.)
+
+DEBUG MODE (5% tasks) 🔥
+├─ Trigger: Đã làm 2+ lần nhưng VẪN CHƯA GIẢI QUYẾT
+├─ MCP Rounds: 3 (BEFORE + DEBUG ANALYSIS + CLEANUP)
+├─ Flow: Deep analysis → MCP R1 → Add debug logs → 
+│         Test → MCP R2 (analyze logs) → Fix → 
+│         MCP R3 (confirm + cleanup) → Remove logs → Done
+└─ Áp dụng: Mysterious bugs, 3-strike rule triggered
+
+**Note:** MODE 1 và MODE 2 cũ giờ hợp nhất thành NORMAL MODE (đều 2 rounds)
+
+🚨 MCP ALWAYS TRIGGERED:
+✅ **MỌI task** - Không phân biệt lớn nhỏ
+✅ Feature mới
+✅ Bug fixes  
+✅ Refactoring
+✅ Config changes
+✅ Documentation updates
+✅ Typo fixes
+✅ **EVERYTHING!**
+
+📋 TASK ANALYSIS (Simplified):
+
+Q1: Files affected?
+    → List all files that will change
+
+Q2: Notable points?
+    → Database, API, Breaking, Dependencies, Risks
+
+🛠️ MCP FEEDBACK TEMPLATE (Version 4.0):
+
+ROUND 1 (BEFORE CODE - ALWAYS):
+- Task description
+- Approach/solution
+- Files to change
+- Technical details (Backend/Frontend/DB)
+- Things to note (Dependencies, Risks, etc.)
+- Alternatives considered
+- Questions for user
+
+ROUND 2 (AFTER CODE - ALWAYS):
+- Implemented code summary
+- Files changed with key highlights
+- Verification checklist
+- Differences from plan (if any)
+- Ready to deploy?
+
+Tool: mcp_interactive-feedback_interactive_feedback
+Params: {
+  project_directory: "D:\HocTapLTHT\Dự án đã hoàn tất\QuanLyNhaTro-VIP",
+  summary: "[Detailed proposal based on mode]"
+}
+
+⚡ TOOL USAGE:
+- grep > codebase_search > read_file
+- search_replace > write  
+- Parallel calls when possible
+- Read before write (always!)
+
+💬 COMMUNICATION (v4.0):
+Before EVERY task:
+1. Analyze task (files affected, notable points)
+2. State: "Theo Version 4.0: MỌI task → 2 ROUNDS MCP!"
+3. 🚨 Call MCP Round 1 (design)
+4. ⏸️ Wait for approval
+5. Implement code
+6. 🚨 Call MCP Round 2 (implementation)
+7. ⏸️ Wait for approval
+8. Done!
+
+Language:      Vietnamese, concise, friendly
+No tool names:  Say "Tôi đang tìm..." not "Using grep..."
+Format:        Analysis → MCP → Code → Done
+Git commits:   <type>: <message tiếng Việt>
+
+✅ ALWAYS DO (v4.0):
+- 🚨 GỌI MCP ROUND 1 TRƯỚC KHI code (MỌI task - NO EXCEPTIONS!)
+- ⏸️ Wait for design approval
+- 💻 Implement code
+- 🚨 GỌI MCP ROUND 2 SAU KHI code (MỌI task - NO EXCEPTIONS!)
+- ⏸️ Wait for implementation approval
+- Error handling (try-catch, validation)
+- Type safety (TypeScript strict)
+- Follow existing patterns
+- Parallel tool calls
+- Read before write
+- Clean up temp files
+
+❌ NEVER DO:
+- **Skip ROUND 1 (before code)** - FORBIDDEN!
+- **Skip ROUND 2 (after code)** - FORBIDDEN!
+- Code without Round 1 approval
+- Deploy without Round 2 approval
+- Hardcode secrets/credentials
+- Auto-commit (only when asked)
+- Premature optimization
+- Over-engineering
+- Ignore existing patterns
+- Leave debug statements
+
+🎯 DECISION (v4.0 - EVEN SIMPLER):
+**EVERYTHING → 2 ROUNDS MCP!**
+- No classification needed
+- No risk analysis needed
+- No mode detection needed (except Debug Mode for 3rd+ attempt)
+- Just: 2 rounds ALWAYS!
+
+📊 KEY METRICS (v4.0):
+- Normal Mode: ~95% of tasks (2 rounds MCP)
+- Debug Mode: ~5% of tasks (3 rounds with logging) 🔥
+- MCP Round 1 time: 2-5 min (design approval)
+- MCP Round 2 time: 2-5 min (code approval)
+- Total approval time: 4-10 min per task (vs 30-120 min refactor if wrong!)
+- ROI: 10-20x from catching issues early (both design AND implementation)
+- Debug success rate: 95% issues resolved
+- User satisfaction: MAXIMUM (100% visibility before AND after code!)
+- Surprise rate: 0% (everything approved twice!)
+
+🎯 SUCCESS CRITERIA:
+✅ Zero unexpected changes
+✅ User approves every approach
+✅ High quality code (reviewed before)
+✅ Fast iterations (no refactors)
+✅ Clear communication
+✅ Peace of mind for everyone
+
+🧹 CLEANUP:
+- Remove temp files after done
+- No debug statements in final code
+- Proper error messages (Vietnamese)
+```
+
+---
+
+## 🚀 One-Liner Prompts
+
+**Nhớ 3 prompts này là đủ:**
+
+### 1️⃣ Dự án mới (Setup):
+```
+Setup .cursorrules cho project này - tự động toàn bộ
+```
+
+### 2️⃣ Session thường (Daily):
+```
+Hôm nay tôi cần: [task cụ thể]
+```
+
+### 3️⃣ Debug nhanh:
+```
+Fix lỗi [mô tả] - nhanh nhất có thể
+```
+
+**VẬY THÔI! Đơn giản đúng không? 😊**
+
+---
+
+**🎯 Mục tiêu:** Nhanh - Gọn - Chính xác - Tiết kiệm - Linh hoạt
+
+---
+
+## 🤖 Auto-Setup Instructions (Cho AI)
+
+**Khi user yêu cầu "Setup .cursorrules cho project này":**
+
+### Bước 1: Phân Tích Project
+```
+1. Đọc package.json / requirements.txt / go.mod / pom.xml
+2. Xác định tech stack (Backend, Frontend, Database)
+3. List dependencies chính (frameworks, ORMs, libs)
+4. Đọc README.md nếu có để hiểu mục đích
+5. Chạy `tree -L 2` hoặc `ls -R` để hiểu structure
+```
+
+### Bước 2: Điền Tự Động
+```
+1. Điền "Project Context" section (lines 3-15)
+   - Tech Stack dựa trên dependencies detected
+   - Mục đích từ README hoặc infer từ structure
+   - Project Structure từ tree output
+
+2. Điền "Framework-Specific Notes" (lines 314-342)
+   - Patterns cụ thể cho framework detected
+   - Examples code với syntax đúng
+
+3. Điền "Project-Specific Conventions" (lines 345-371)
+   - API format nếu detect được (REST/GraphQL)
+   - Naming conventions từ existing files
+   - Key directories từ structure analysis
+
+4. Update "Ignore" list nếu cần (lines 87-127)
+   - Thêm project-specific ignores
+```
+
+### Bước 3: Confirm & Commit
+```
+1. Show summary của những gì đã điền
+2. Ask: "Xác nhận và commit?"
+3. If yes: git add .cursorrules && git commit -m "docs: setup Cursor AI rules"
+```
+
+---
+
+## 📋 Checklist Khi Bắt Đầu Dự Án Mới
+
+### Option 1: Tự Động (Khuyến Nghị - 2 phút)
+```markdown
+Prompt: "Setup .cursorrules cho project này - tự động toàn bộ"
+
+AI sẽ:
+✅ Phân tích project
+✅ Điền mọi thứ tự động
+✅ Hỏi confirm
+✅ Commit nếu bạn đồng ý
+```
+
+### Option 2: Thủ Công (5-10 phút)
+- [ ] Điền Tech Stack (Backend, Frontend, Database, Deployment)
+- [ ] Điền Mục đích dự án
+- [ ] Điền Project Structure (chạy `tree -L 2`)
+- [ ] Update Files & Directories to Ignore (nếu cần)
+- [ ] Điền Framework-Specific Notes (patterns & examples)
+- [ ] Điền Project-Specific Conventions (API, Naming, Key Files)
+- [ ] Commit: `git add .cursorrules && git commit -m "docs: setup Cursor AI rules"`
+
+**💡 Tip:** Dùng Option 1 - Nhanh và chính xác hơn!
+
+---
+
+## 🎯 Common Tech Stack Quick Templates
+
+<details>
+<summary>📘 NestJS + Prisma + Next.js (Click to expand)</summary>
+
+```markdown
+**Tech Stack:**
+- Backend: NestJS + Prisma + PostgreSQL/MySQL
+- Frontend: Next.js 14 + React + TailwindCSS
+- Database: PostgreSQL/MySQL
+- Deployment: Docker Compose
+
+**Patterns:**
+- Backend: Controller → Service → Prisma
+- Frontend: App Router, Server Components default
+- Auth: JWT + Passport
+- Validation: class-validator (backend), Zod (frontend)
+```
+</details>
+
+<details>
+<summary>🐍 FastAPI + SQLAlchemy + React (Click to expand)</summary>
+
+```markdown
+**Tech Stack:**
+- Backend: FastAPI + SQLAlchemy + PostgreSQL
+- Frontend: React 18 + Vite + TailwindCSS
+- Database: PostgreSQL
+- Deployment: Docker
+
+**Patterns:**
+- Backend: Router → Service → SQLAlchemy
+- Frontend: Hooks, Context for state
+- Auth: JWT Bearer
+- Validation: Pydantic (backend), Yup/Zod (frontend)
+```
+</details>
+
+<details>
+<summary>🎸 Django + Vue (Click to expand)</summary>
+
+```markdown
+**Tech Stack:**
+- Backend: Django + Django REST Framework + PostgreSQL
+- Frontend: Vue 3 + Composition API + Vuetify
+- Database: PostgreSQL
+- Deployment: Docker
+
+**Patterns:**
+- Backend: Views → Serializers → Models
+- Frontend: Composition API, Pinia for state
+- Auth: Django Auth + JWT
+- Validation: DRF Serializers
+```
+</details>
+
+<details>
+<summary>☕ Spring Boot + Angular (Click to expand)</summary>
+
+```markdown
+**Tech Stack:**
+- Backend: Spring Boot + JPA + MySQL
+- Frontend: Angular 17 + TypeScript + Material
+- Database: MySQL
+- Deployment: Kubernetes
+
+**Patterns:**
+- Backend: Controller → Service → Repository
+- Frontend: Services + RxJS, NgRx for state
+- Auth: Spring Security + JWT
+- Validation: Bean Validation (backend), Reactive Forms (frontend)
+```
+</details>
+
+---
+
+**🎯 Mục tiêu:** Nhanh - Gọn - Chính xác - Tiết kiệm - Linh hoạt
+
+**Sau khi setup → File này giúp AI hiểu project ngay lập tức! 🚀**

@@ -1,0 +1,5 @@
+{
+  "name": "Boarding House Manager",
+  "description": "A responsive, mobile-friendly web app for landlords to manage rental rooms, tenants, invoices, and maintenance logs. Designed for simplicity and at-a-glance overviews.",
+  "requestFramePermissions": []
+}
